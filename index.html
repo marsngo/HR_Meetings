@@ -54,7 +54,6 @@
             transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        /* القائمة الجانبية الزجاجية */
         .sidebar {
             width: var(--sidebar-w);
             background: var(--glass-bg);
@@ -103,7 +102,6 @@
             .main-content { margin-right: 0; width: 100%; padding: 15px; }
         }
 
-        /* البطاقات الزجاجية */
         .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(18px);
@@ -117,7 +115,6 @@
         }
         .glass-card:hover { box-shadow: 0 12px 40px rgba(14, 165, 233, 0.1); }
 
-        /* شاشة تسجيل الدخول */
         .login-overlay { max-width: 420px; margin: 45px auto; text-align: center; }
         .biometric-btn {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -129,11 +126,7 @@
         }
         .biometric-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5); }
 
-        /* الشريط العلوي */
-        .top-hud {
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 15px; padding: 16px 24px;
-        }
+        .top-hud { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 16px 24px; }
         .hud-clock {
             font-size: 20px; font-weight: 800; color: var(--accent-cyan);
             letter-spacing: 1px; background: rgba(14, 165, 233, 0.1);
@@ -182,7 +175,7 @@
 
         .table-custom { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         .table-custom th, .table-custom td { padding: 12px 10px; text-align: right; border-bottom: 1px solid var(--glass-border); }
-        .table-custom th { color: var(--accent-cyan); font-weight: 700; font-size: 12px; text-transform: uppercase; }
+        .table-custom th { color: var(--accent-cyan); font-weight: 700; font-size: 12px; }
 
         .online-pulse-box {
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1));
@@ -215,6 +208,7 @@
             <li id="m-security"><a href="#" onclick="showSection('security')"><i class="fas fa-fingerprint"></i><span>الأمان والبصمة</span></a></li>
             <li id="m-hrAdmin" style="display:none;"><a href="#" onclick="showSection('hrAdmin')"><i class="fas fa-users-cog"></i><span>إدارة الموظفين</span></a></li>
             <li id="m-settings" style="display:none;"><a href="#" onclick="showSection('settings')"><i class="fas fa-sliders-h"></i><span>إعدادات الإيميل</span></a></li>
+            <li id="m-aiAssistant" style="display:none;"><a href="#" onclick="showSection('aiAssistant')"><i class="fas fa-robot"></i><span>المساعد الذكي AI</span></a></li>
         </ul>
     </div>
 
@@ -469,40 +463,92 @@
                 </div>
             </div>
 
-            <!-- 7️⃣ إعدادات الإيميلات والتفاصيل (Admin Settings) -->
+            <!-- 7️⃣ إعدادات الإيميلات والربط (Admin Settings) -->
             <div id="settingsSec" class="section-panel">
-                <div class="glass-card" style="max-width: 700px; margin: auto;">
-                    <h3 style="margin-bottom: 15px;"><i class="fas fa-sliders-h" style="color:var(--accent-cyan);"></i> إعدادات النظام ونصوص الإيميلات الرسمية</h3>
-                    <div class="form-group">
-                        <label>نطاقات IP المكاتب المعتمدة للحضور المكتبي (أول 3 مقاطع مفصولة بفاصلة)</label>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <input type="text" id="setOfficeSubnets" placeholder="مثال: 185.120.44., 94.130.12." style="flex-grow: 1; direction: ltr; text-align: left;">
-                            <button type="button" class="pill-btn" onclick="detectCurrentSubnet()" style="background: rgba(16,185,129,0.15); color: #10b981; border-color: rgba(16,185,129,0.3);">
-                                <i class="fas fa-wifi"></i> التقاط IP شبكتي الحالية ⚡
-                            </button>
-                        </div>
-                        <small style="color: var(--text-muted); font-size: 11px;">اتركه فارغاً للسماح بالتسجيل من أي شبكة، أو أضف نطاقات المكاتب لقفل الحضور المكتبي عليها.</small>
-                    </div>
+                <div class="glass-card" style="max-width: 820px; margin: auto;">
+                    <h3 style="margin-bottom: 18px;"><i class="fas fa-sliders-h" style="color:var(--accent-cyan);"></i> إعدادات النظام، الشبكة، والربط الخارجي</h3>
                     <form onsubmit="saveSystemSettings(event)">
-                        <div class="grid-2">
+                        <div class="grid-3">
                             <div class="form-group">
-                                <label>إيميل الموارد البشرية (يستلم نسخة CC من كل إجازة)</label>
+                                <label>إيميل الموارد البشرية (CC)</label>
                                 <input type="email" id="setHrEmail" required>
                             </div>
                             <div class="form-group">
-                                <label>اسم المنظمة الرسمي (يظهر كاسم المُرسل)</label>
+                                <label>إيميل الأدمن الإضافي (CC اختياري)</label>
+                                <input type="email" id="setAdminEmail" placeholder="admin@mars-ngo.org">
+                            </div>
+                            <div class="form-group">
+                                <label>اسم المنظمة الرسمي</label>
                                 <input type="text" id="setOrgName" required>
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label>النص التمهيدي لإيميل طلب الإجازة (المُرسل للمدير المباشر)</label>
-                            <textarea id="setLeaveIntro" rows="2" required></textarea>
+                            <label>نطاقات IP المكاتب المعتمدة للحضور المكتبي (أول 3 مقاطع مفصولة بفاصلة)</label>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <input type="text" id="setOfficeSubnets" placeholder="مثال: 185.120.44., 94.130.12." style="flex-grow: 1; direction: ltr; text-align: left;">
+                                <button type="button" class="pill-btn" onclick="detectCurrentSubnet()" style="background: rgba(16,185,129,0.15); color: #10b981; border-color: rgba(16,185,129,0.3);">
+                                    <i class="fas fa-wifi"></i> التقاط IP شبكتي الحالية ⚡
+                                </button>
+                            </div>
+                            <small style="color: var(--text-muted); font-size: 11px;">اتركه فارغاً للسماح بالتسجيل من أي شبكة، أو أضف نطاقات المكاتب لقفل الحضور المكتبي عليها.</small>
                         </div>
-                        <div class="form-group">
-                            <label>النص التمهيدي لإيميل حجز الاجتماعات</label>
-                            <textarea id="setMeetingIntro" rows="2" required></textarea>
+
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label>رقم واتساب الإدارة (بدون +)</label>
+                                <input type="text" id="setWhatsappPhone" placeholder="مثال: 963912345678" style="direction:ltr; text-align:left;">
+                            </div>
+                            <div class="form-group">
+                                <label>مفتاح واتساب (CallMeBot API Key)</label>
+                                <input type="text" id="setWhatsappKey" placeholder="مثال: 123456" style="direction:ltr; text-align:left;">
+                            </div>
+                            <div class="form-group">
+                                <label>مفتاح الذكاء الاصطناعي (Gemini API Key)</label>
+                                <input type="password" id="setGeminiKey" placeholder="AIzaSy..." style="direction:ltr; text-align:left;">
+                            </div>
                         </div>
-                        <button type="submit" class="btn-action">حفظ وتطبيق الإعدادات فوراً ⚡</button>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>النص التمهيدي لإيميل طلب الإجازة</label>
+                                <textarea id="setLeaveIntro" rows="2" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>النص التمهيدي لإيميل حجز الاجتماعات</label>
+                                <textarea id="setMeetingIntro" rows="2" required></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-action">حفظ وتطبيق كافة الإعدادات فوراً ⚡</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 8️⃣ المساعد الذكي التنفيذي (حصري للإدارة العليا) -->
+            <div id="aiAssistantSec" class="section-panel">
+                <div class="glass-card" style="max-width: 820px; margin: auto;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px;">
+                        <div class="stat-icon" style="background:linear-gradient(135deg,#0ea5e9,#6366f1); color:white;"><i class="fas fa-robot"></i></div>
+                        <div>
+                            <h3>مساعد MARS التنفيذي الذكي (Gemini AI)</h3>
+                            <small style="color:var(--text-muted);">تحليل فوري لسجلات الحضور، إنجازات الأونلاين، وأرصدة الإجازات</small>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">
+                        <button type="button" class="pill-btn" onclick="quickAskAI('لخص لي حضور الفريق اليوم ومن يعمل أونلاين وما هي إنجازاتهم؟')">📊 ملخص دوام وإنجازات اليوم</button>
+                        <button type="button" class="pill-btn" onclick="quickAskAI('من هم الموظفون الذين لديهم طلبات إجازة قيد المراجعة حالياً؟')">⏳ الإجازات المعلقة</button>
+                        <button type="button" class="pill-btn" onclick="quickAskAI('أعطني تقريراً عن أكثر الموظفين التزاماً بالحضور هذا الشهر')">🏆 تحليل الالتزام بالدوام</button>
+                    </div>
+
+                    <div id="aiChatBox" style="min-height: 220px; max-height: 380px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px; margin-bottom: 15px; line-height: 1.8; font-size: 14px; white-space: pre-wrap;">
+                        مرحباً بك! أنا جاهز لتحليل بيانات المنظمة والإجابة على استفساراتك الإدارية...
+                    </div>
+
+                    <form onsubmit="askExecutiveAI(event)" style="display:flex; gap:10px;">
+                        <input type="text" id="aiQuestionInput" placeholder="اكتب سؤالك للمساعد الذكي هنا..." required style="flex-grow:1; padding:12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text-main);">
+                        <button type="submit" class="btn-action" style="width:auto; padding:0 24px;">تحليل ⚡</button>
                     </form>
                 </div>
             </div>
@@ -511,7 +557,6 @@
     </div>
 
     <script>
-        // ⚠️ تأكد من وجود رابط الـ Web App URL الصحيح هنا:
         const API_URL = "https://script.google.com/macros/s/AKfycbwaHigI0tQgBsjN-Hn3CVecphmb7GmW9buD-AK1kfuyEb5wV4koSy1hUX_CqGMvAaa9vg/exec";
 
         let currentUser = null;
@@ -519,7 +564,6 @@
         let teamList = [];
         let attChartInstance = null;
 
-        // تحديث الساعة الحية
         setInterval(() => {
             const el = document.getElementById('liveClock');
             if (el) el.textContent = new Date().toLocaleTimeString('en-GB');
@@ -617,6 +661,7 @@
             if (currentUser.isAdmin) {
                 document.getElementById('m-hrAdmin').style.display = 'block';
                 document.getElementById('m-settings').style.display = 'block';
+                document.getElementById('m-aiAssistant').style.display = 'block';
                 populateManagerDropdown();
                 loadHREmployees();
                 loadSystemSettings();
@@ -714,17 +759,15 @@
         async function sendAttendance(action) {
             const office = document.getElementById('officeSelect').value;
             const notes = document.getElementById('attNotes').value;
-            Swal.fire({ title: 'جاري التحقق من شبكة المكتب وتسجيل البصمة...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        
-            // 1. جلب عنوان IP الحالي من خدمة مجانية سريعة
+            Swal.fire({ title: 'جاري التحقق من الشبكة وتسجيل البصمة...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
             let currentIp = '';
             try {
                 const ipRes = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipRes.json();
                 currentIp = ipData.ip || '';
             } catch (e) {}
-        
-            // 2. جلب إحداثيات GPS وإرسال الطلب
+
             const send = async (coords) => {
                 const res = await callApi({
                     route: 'attendance', code: currentUser.code, token: sessionToken,
@@ -735,7 +778,7 @@
                 Swal.fire(res.success ? 'تم بنجاح' : 'مرفوض', res.message, res.success ? 'success' : 'error');
                 if (res.success) refreshAllData();
             };
-        
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(p => send(`${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`), () => send(''), { timeout: 4000 });
             } else send('');
@@ -851,50 +894,58 @@
         }
 
         async function detectCurrentSubnet() {
-    Swal.fire({ title: 'جاري فحص شبكتك...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    try {
-        const res = await fetch('https://api.ipify.org?format=json');
-        const data = await res.json();
-        const parts = data.ip.split('.');
-        const subnet = `${parts[0]}.${parts[1]}.${parts[2]}.`;
-        
-        const input = document.getElementById('setOfficeSubnets');
-        const existing = input.value.trim();
-        if (!existing.includes(subnet)) {
-            input.value = existing ? `${existing}, ${subnet}` : subnet;
+            Swal.fire({ title: 'جاري فحص شبكتك...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                const parts = data.ip.split('.');
+                const subnet = `${parts[0]}.${parts[1]}.${parts[2]}.`;
+                
+                const input = document.getElementById('setOfficeSubnets');
+                const existing = input.value.trim();
+                if (!existing.includes(subnet)) {
+                    input.value = existing ? `${existing}, ${subnet}` : subnet;
+                }
+                Swal.fire('تم التقاط الشبكة! 📶', `عنوانك الكامل: ${data.ip}\nتمت إضافة النطاق (${subnet}*) إلى القائمة. لا تنسَ الضغط على زر الحفظ في الأسفل.`, 'success');
+            } catch (e) {
+                Swal.fire('خطأ', 'تعذر قراءة عنوان الشبكة الحالية.', 'error');
+            }
         }
-        Swal.fire('تم التقاط الشبكة! 📶', `عنوانك الكامل: ${data.ip}\nتمت إضافة النطاق (${subnet}*) إلى القائمة. لا تنسَ الضغط على زر الحفظ في الأسفل.`, 'success');
-    } catch (e) {
-        Swal.fire('خطأ', 'تعذر قراءة عنوان الشبكة الحالية.', 'error');
-    }
-}
 
-async function loadSystemSettings() {
-    const res = await callApi({ route: 'adminGetSettings', code: currentUser.code, token: sessionToken });
-    if (res.success && res.settings) {
-        document.getElementById('setHrEmail').value = res.settings.hrEmail;
-        document.getElementById('setOrgName').value = res.settings.orgName;
-        document.getElementById('setLeaveIntro').value = res.settings.leaveEmailIntro;
-        document.getElementById('setMeetingIntro').value = res.settings.meetingEmailIntro;
-        document.getElementById('setOfficeSubnets').value = res.settings.officeSubnets || '';
-    }
-}
-
-async function saveSystemSettings(e) {
-    e.preventDefault();
-    Swal.fire({ title: 'جاري حفظ الإعدادات...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    const res = await callApi({
-        route: 'adminSaveSettings', code: currentUser.code, token: sessionToken,
-        settings: {
-            hrEmail: document.getElementById('setHrEmail').value,
-            orgName: document.getElementById('setOrgName').value,
-            leaveEmailIntro: document.getElementById('setLeaveIntro').value,
-            meetingEmailIntro: document.getElementById('setMeetingIntro').value,
-            officeSubnets: document.getElementById('setOfficeSubnets').value
+        async function loadSystemSettings() {
+            const res = await callApi({ route: 'adminGetSettings', code: currentUser.code, token: sessionToken });
+            if (res.success && res.settings) {
+                document.getElementById('setHrEmail').value = res.settings.hrEmail;
+                document.getElementById('setAdminEmail').value = res.settings.adminEmail || '';
+                document.getElementById('setOrgName').value = res.settings.orgName;
+                document.getElementById('setLeaveIntro').value = res.settings.leaveEmailIntro;
+                document.getElementById('setMeetingIntro').value = res.settings.meetingEmailIntro;
+                document.getElementById('setOfficeSubnets').value = res.settings.officeSubnets || '';
+                document.getElementById('setWhatsappPhone').value = res.settings.whatsappPhone || '';
+                document.getElementById('setWhatsappKey').value = res.settings.whatsappApiKey || '';
+                document.getElementById('setGeminiKey').value = res.settings.geminiApiKey || '';
+            }
         }
-    });
-    Swal.fire(res.success ? 'تم الحفظ' : 'خطأ', res.message, res.success ? 'success' : 'error');
-}
+
+        async function saveSystemSettings(e) {
+            e.preventDefault();
+            Swal.fire({ title: 'جاري حفظ الإعدادات...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await callApi({
+                route: 'adminSaveSettings', code: currentUser.code, token: sessionToken,
+                settings: {
+                    hrEmail: document.getElementById('setHrEmail').value,
+                    adminEmail: document.getElementById('setAdminEmail').value,
+                    orgName: document.getElementById('setOrgName').value,
+                    leaveEmailIntro: document.getElementById('setLeaveIntro').value,
+                    meetingEmailIntro: document.getElementById('setMeetingIntro').value,
+                    officeSubnets: document.getElementById('setOfficeSubnets').value,
+                    whatsappPhone: document.getElementById('setWhatsappPhone').value,
+                    whatsappApiKey: document.getElementById('setWhatsappKey').value,
+                    geminiApiKey: document.getElementById('setGeminiKey').value
+                }
+            });
+            Swal.fire(res.success ? 'تم الحفظ' : 'خطأ', res.message, res.success ? 'success' : 'error');
+        }
 
         async function exportCSV(target) {
             Swal.fire({ title: 'جاري تجهيز ملف Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -906,6 +957,29 @@ async function saveSystemSettings(e) {
             link.href = URL.createObjectURL(blob);
             link.download = res.filename;
             link.click();
+        }
+
+        function quickAskAI(q) {
+            document.getElementById('aiQuestionInput').value = q;
+            askExecutiveAI(new Event('submit'));
+        }
+
+        async function askExecutiveAI(e) {
+            e.preventDefault();
+            const input = document.getElementById('aiQuestionInput');
+            const question = input.value.trim();
+            if (!question) return;
+
+            const chatBox = document.getElementById('aiChatBox');
+            chatBox.innerHTML = `<div style="color:var(--accent-cyan); font-weight:bold; margin-bottom:10px;">👤 سؤالك: ${question}</div><div>⏳ جاري تحليل قواعد البيانات في Google Sheets...</div>`;
+            input.value = '';
+
+            const res = await callApi({ route: 'askAI', code: currentUser.code, token: sessionToken, question });
+            if (res.success) {
+                chatBox.innerHTML = `<div style="color:var(--accent-cyan); font-weight:bold; margin-bottom:10px;">👤 سؤالك: ${question}</div><div>🤖 <strong>التحليل الذكي:</strong>\n${res.answer}</div>`;
+            } else {
+                chatBox.innerHTML = `<div style="color:#f87171;">${res.message}</div>`;
+            }
         }
 
         function showSection(id) {
