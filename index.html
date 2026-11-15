@@ -80,6 +80,7 @@
             <li id="m-meetings"><a href="#" onclick="showSection('meetings')"><i class="fas fa-video"></i><span>الاجتماعات</span></a></li>
             <li id="m-records"><a href="#" onclick="showSection('records')"><i class="fas fa-history"></i><span>سجل الدوام</span></a></li>
             <li id="m-security"><a href="#" onclick="showSection('security')"><i class="fas fa-key"></i><span>الأمان والبصمة</span></a></li>
+            <li id="m-hrAdmin" style="display:none;"><a href="#" onclick="showSection('hrAdmin')"><i class="fas fa-users-cog"></i><span>إدارة الموظفين (HR)</span></a></li>
         </ul>
     </div>
 
@@ -190,15 +191,12 @@
 
             <!-- 3️⃣ الاجتماعات -->
             <div id="meetingsSec" class="section-panel">
-                <div class="form-group">
-                    <label>تفاصيل / أجندة الاجتماع</label>
-                    <textarea id="mNotes" rows="2" placeholder="اكتب محاور الاجتماع أو الروابط المطلوبة..."></textarea>
-                </div>
                 <div class="grid-2">
                     <div class="card">
                         <h3>حجز اجتماع</h3><br>
                         <form onsubmit="submitMeeting(event)">
                             <div class="form-group"><label>العنوان</label><input type="text" id="mTitle" required></div>
+                            <div class="form-group"><label>تفاصيل / أجندة الاجتماع</label><textarea id="mNotes" rows="2" placeholder="اكتب محاور الاجتماع..."></textarea></div>
                             <div class="form-group"><label>المدعوون</label><div id="attendeesSelectList" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></div></div>
                             <div class="grid-2"><div class="form-group"><label>التاريخ</label><input type="date" id="mDate" required></div><div class="form-group"><label>الوقت</label><input type="time" id="mTime" required></div></div>
                             <div class="form-group"><label>المدة</label><select id="mDuration"><option value="30">30 دقيقة</option><option value="60">ساعة</option></select></div>
@@ -231,18 +229,54 @@
                 </div>
             </div>
 
+            <!-- 6️⃣ إدارة الموظفين (حصري للـ HR والأدمن) -->
+            <div id="hrAdminSec" class="section-panel">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3><i class="fas fa-user-plus" style="color:var(--mars-primary);"></i> إضافة / تعديل موظف</h3>
+                        <br>
+                        <form onsubmit="saveEmployeeByHR(event)">
+                            <div class="grid-2">
+                                <div class="form-group"><label>كود الموظف (فريد)</label><input type="text" id="hrCode" required placeholder="مثال: ME_105"></div>
+                                <div class="form-group"><label>الاسم الكامل</label><input type="text" id="hrName" required placeholder="الاسم الثلاثي"></div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group"><label>القسم</label><input type="text" id="hrDept" required placeholder="مثال: البرامج"></div>
+                                <div class="form-group"><label>المسمى الوظيفي</label><input type="text" id="hrRole" required placeholder="مثال: منسق ميداني"></div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="hrEmail" required placeholder="name@mars-ngo.org"></div>
+                                <div class="form-group"><label>المدير المباشر</label><input type="text" id="hrManager" required placeholder="اسم المدير"></div>
+                            </div>
+                            <div class="form-group"><label>كلمة المرور (تُترك فارغة للإبقاء على القديمة عند التعديل)</label><input type="text" id="hrPass" placeholder="الافتراضية: 123456"></div>
+                            <div class="form-group">
+                                <label style="font-weight:normal; cursor:pointer;"><input type="checkbox" id="hrResetBio"> مسح بصمة الجوال المسجلة</label>
+                            </div>
+                            <button type="submit" class="btn-action">حفظ بيانات الموظف 💾</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3><i class="fas fa-id-badge" style="color:var(--mars-primary);"></i> دليل الموظفين</h3>
+                        <div style="max-height: 400px; overflow-y: auto; margin-top: 10px;">
+                            <table class="table-custom">
+                                <thead><tr><th>الكود</th><th>الاسم</th><th>القسم</th><th>البصمة</th><th>إجراء</th></tr></thead>
+                                <tbody id="hrEmployeesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // ⚠️ ضع رابط الـ Web App URL الخاص بك من Google Apps Script هنا:
         const API_URL = "https://script.google.com/macros/s/AKfycbwaHigI0tQgBsjN-Hn3CVecphmb7GmW9buD-AK1kfuyEb5wV4koSy1hUX_CqGMvAaa9vg/exec";
 
         let currentUser = null;
         let sessionToken = null;
         let teamList = [];
 
-        // دالة موحدة للاتصال الآمن بالسيرفر
         async function callApi(payload) {
             const response = await fetch(API_URL, {
                 method: 'POST',
@@ -254,7 +288,7 @@
 
         async function loginWithPassword() {
             const code = document.getElementById('codeInput').value.trim();
-            const password = document.getElementById('passInput').value;
+            const password = document.getElementById('passInput').value.trim();
             if (!code || !password) return Swal.fire('تنبيه', 'يرجى إدخال الكود وكلمة المرور', 'warning');
 
             Swal.fire({ title: 'جاري التحقق المشفر...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -262,7 +296,6 @@
             handleLoginResponse(res);
         }
 
-        // بصمة الجوال الحقيقية (تعمل بكفاءة 100% على GitHub Pages)
         async function loginWithBiometric() {
             const credId = localStorage.getItem('mars_webauthn_id');
             if (!credId) return Swal.fire('البصمة غير مفعّلة', 'ادخل بالكود وكلمة المرور أولاً، ثم اذهب لقسم (الأمان والبصمة) لتفعيل بصمة هاتفك.', 'info');
@@ -328,6 +361,11 @@
             document.getElementById('uManager').textContent = 'المدير: ' + currentUser.manager;
             document.getElementById('statTotal').textContent = teamList.length;
 
+            if (currentUser.isAdmin) {
+                document.getElementById('m-hrAdmin').style.display = 'block';
+                loadHREmployees();
+            }
+
             document.getElementById('attendeesSelectList').innerHTML = teamList
                 .filter(e => e.name !== currentUser.name)
                 .map(e => `<label style="display:block; margin-bottom:5px;"><input type="checkbox" value="${e.email}" data-name="${e.name}"> ${e.name}</label>`).join('');
@@ -343,7 +381,21 @@
                 document.getElementById('statOnline').textContent = dash.stats.presentOnline;
                 document.getElementById('liveTeamTable').innerHTML = dash.stats.activeTeam.map(t => `<tr><td><strong>${t.name}</strong></td><td>${t.office}</td><td>${t.checkIn}</td><td>${t.checkOut}</td></tr>`).join('') || '<tr><td colspan="4">لا يوجد حضور بعد</td></tr>';
                 document.getElementById('attendanceRecordsTable').innerHTML = dash.myRecords.map(r => `<tr><td>${r.date}</td><td>${r.office}</td><td>${r.checkIn||'-'}</td><td>${r.checkOut||'-'}</td><td>${r.notes||'-'}</td></tr>`).join('');
-                document.getElementById('meetingsList').innerHTML = dash.meetings.map(m => `<div style="padding:10px; border-bottom:1px solid #eee;"><strong>${m.title}</strong><p style="font-size:12px;">${m.date} - ${m.time}</p><a href="${m.location}" target="_blank">دخول الاجتماع 🔗</a></div>`).join('');
+                
+                document.getElementById('meetingsList').innerHTML = dash.meetings.length ? dash.meetings.map(m => {
+                    const canCancel = (m.organizerEmail === currentUser.email || currentUser.isAdmin);
+                    return `
+                        <div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                            <div>
+                                <strong>📌 ${m.title}</strong>
+                                <p style="font-size:12px; color:#666; margin:4px 0;">🗓️ ${m.date} | 🕒 ${m.time} (${m.duration})</p>
+                                <p style="font-size:11px; color:#888; margin-bottom:6px;">المنظّم: ${m.createdBy}</p>
+                                <a href="${m.location}" target="_blank" style="font-size:12px; font-weight:bold; color:#2596be; text-decoration:none;">دخول Google Meet 🔗</a>
+                            </div>
+                            ${canCancel ? `<button onclick="cancelMeeting('${m.id}', '${m.title}')" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;"><i class="fas fa-trash-alt"></i> إلغاء</button>` : ''}
+                        </div>
+                    `;
+                }).join('') : '<p style="color:#888;">لا توجد اجتماعات مجدولة حالياً</p>';
             }
 
             const bal = await callApi({ route: 'getBalance', code: currentUser.code, token: sessionToken });
@@ -399,59 +451,111 @@
         }
 
         async function submitMeeting(e) {
-    e.preventDefault();
-    const attendees = Array.from(document.querySelectorAll('#attendeesSelectList input:checked'))
-        .map(cb => ({ name: cb.getAttribute('data-name'), email: cb.value }));
-    
-    if (!attendees.length) {
-        return Swal.fire('تنبيه', 'يرجى اختيار شخص واحد على الأقل للاجتماع معه', 'warning');
-    }
-
-    Swal.fire({ title: 'جاري فحص المواعيد وإنشاء رابط Meet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-    const res = await callApi({
-        route: 'createMeeting',
-        code: currentUser.code,
-        token: sessionToken,
-        meeting: {
-            title: document.getElementById('mTitle').value,
-            notes: document.getElementById('mNotes').value,
-            date: document.getElementById('mDate').value,
-            time: document.getElementById('mTime').value,
-            duration: document.getElementById('mDuration').value,
-            attendees: attendees
-        }
-    });
-
-    if (res.success) {
-        Swal.fire({
-            icon: 'success',
-            title: 'تم حجز الاجتماع بنجاح!',
-            html: `<p>${res.message}</p><br><a href="${res.meetLink}" target="_blank" style="color:#2596be; font-weight:bold;">فتح رابط Google Meet الآن 🔗</a>`
-        });
-        document.getElementById('mTitle').value = '';
-        document.getElementById('mNotes').value = '';
-        refreshAllData();
-    } else {
-        // إظهار رسالة التعارض بوضوح ليقوم الموظف بتغيير الموعد
-        Swal.fire({
-            icon: res.conflict ? 'warning' : 'error',
-            title: res.conflict ? 'الموعد محجوز مسبقاً!' : 'خطأ',
-            text: res.message,
-            confirmButtonText: 'تغيير الموعد'
-        });
-    }
-}(e) {
             e.preventDefault();
-            const attendees = Array.from(document.querySelectorAll('#attendeesSelectList input:checked')).map(cb => ({ name: cb.getAttribute('data-name'), email: cb.value }));
-            if (!attendees.length) return Swal.fire('تنبيه', 'اختر شخصاً واحداً على الأقل', 'warning');
-            Swal.fire({ title: 'جاري الحجز...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const attendees = Array.from(document.querySelectorAll('#attendeesSelectList input:checked'))
+                .map(cb => ({ name: cb.getAttribute('data-name'), email: cb.value }));
+            
+            if (!attendees.length) {
+                return Swal.fire('تنبيه', 'يرجى اختيار شخص واحد على الأقل للاجتماع معه', 'warning');
+            }
+
+            Swal.fire({ title: 'جاري فحص المواعيد وإنشاء رابط Meet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
             const res = await callApi({
-                route: 'createMeeting', code: currentUser.code, token: sessionToken,
-                meeting: { title: document.getElementById('mTitle').value, date: document.getElementById('mDate').value, time: document.getElementById('mTime').value, duration: document.getElementById('mDuration').value, attendees }
+                route: 'createMeeting',
+                code: currentUser.code,
+                token: sessionToken,
+                meeting: {
+                    title: document.getElementById('mTitle').value,
+                    notes: document.getElementById('mNotes').value,
+                    date: document.getElementById('mDate').value,
+                    time: document.getElementById('mTime').value,
+                    duration: document.getElementById('mDuration').value,
+                    attendees: attendees
+                }
             });
-            Swal.fire('تم', res.message, 'success');
-            refreshAllData();
+
+            if (res.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم حجز الاجتماع بنجاح!',
+                    html: `<p>${res.message}</p><br><a href="${res.meetLink}" target="_blank" style="color:#2596be; font-weight:bold;">فتح رابط Google Meet الآن 🔗</a>`
+                });
+                document.getElementById('mTitle').value = '';
+                document.getElementById('mNotes').value = '';
+                refreshAllData();
+            } else {
+                Swal.fire({
+                    icon: res.conflict ? 'warning' : 'error',
+                    title: res.conflict ? 'الموعد محجوز مسبقاً!' : 'خطأ',
+                    text: res.message,
+                    confirmButtonText: 'تغيير الموعد'
+                });
+            }
+        }
+
+        async function cancelMeeting(meetingId, meetingTitle) {
+            const confirm = await Swal.fire({
+                title: 'تأكيد إلغاء الاجتماع',
+                text: `هل أنت متأكد من إلغاء اجتماع "${meetingTitle}"؟`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'نعم، إلغاء الاجتماع',
+                cancelButtonText: 'تراجع'
+            });
+            if (!confirm.isConfirmed) return;
+
+            Swal.fire({ title: 'جاري إلغاء الاجتماع...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await callApi({ route: 'cancelMeeting', code: currentUser.code, token: sessionToken, meetingId });
+            Swal.fire(res.success ? 'تم الإلغاء' : 'خطأ', res.message, res.success ? 'success' : 'error');
+            if (res.success) refreshAllData();
+        }
+
+        async function loadHREmployees() {
+            const res = await callApi({ route: 'adminGetEmployees', code: currentUser.code, token: sessionToken });
+            if (res.success) {
+                document.getElementById('hrEmployeesTable').innerHTML = res.employees.map(e => `
+                    <tr>
+                        <td><strong>${e.code}</strong></td>
+                        <td>${e.name}<br><small style="color:#777;">${e.email}</small></td>
+                        <td>${e.dept}</td>
+                        <td>${e.hasBio ? '✅ مفعّلة' : '❌ غير مربوطة'}</td>
+                        <td><button onclick='fillHRForm(${JSON.stringify(e)})' style="background:#e0f2fe; color:#0284c7; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px;">تعديل</button></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function fillHRForm(emp) {
+            document.getElementById('hrCode').value = emp.code;
+            document.getElementById('hrName').value = emp.name;
+            document.getElementById('hrDept').value = emp.dept;
+            document.getElementById('hrRole').value = emp.role;
+            document.getElementById('hrEmail').value = emp.email;
+            document.getElementById('hrManager').value = emp.manager;
+            document.getElementById('hrPass').value = '';
+            document.getElementById('hrResetBio').checked = false;
+        }
+
+        async function saveEmployeeByHR(e) {
+            e.preventDefault();
+            Swal.fire({ title: 'جاري الحفظ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await callApi({
+                route: 'adminSaveEmployee', code: currentUser.code, token: sessionToken,
+                employee: {
+                    code: document.getElementById('hrCode').value,
+                    name: document.getElementById('hrName').value,
+                    dept: document.getElementById('hrDept').value,
+                    role: document.getElementById('hrRole').value,
+                    email: document.getElementById('hrEmail').value,
+                    manager: document.getElementById('hrManager').value,
+                    password: document.getElementById('hrPass').value,
+                    resetBio: document.getElementById('hrResetBio').checked
+                }
+            });
+            Swal.fire(res.success ? 'تم بنجاح' : 'خطأ', res.message, res.success ? 'success' : 'error');
+            if (res.success) loadHREmployees();
         }
 
         function showSection(id) {
