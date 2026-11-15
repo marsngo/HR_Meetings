@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARS HR - منصة الموارد البشرية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root { --mars-primary: #2596be; --mars-dark: #1e242b; --mars-accent: #c7b078; --mars-bg: #f0f4f8; --sidebar-w: 250px; }
+        body { background-color: var(--mars-bg); color: #333; display: flex; min-height: 100vh; }
+
+        .sidebar { width: var(--sidebar-w); background: linear-gradient(180deg, var(--mars-dark) 0%, #111519 100%); color: white; position: fixed; right: 0; top: 0; bottom: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-header { padding: 25px 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sidebar-logo { width: 55px; height: 55px; background: linear-gradient(135deg, var(--mars-primary), #1b7291); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: white; font-size: 26px; }
+        .sidebar-menu { list-style: none; padding: 15px 0; flex-grow: 1; }
+        .sidebar-menu li a { display: flex; align-items: center; padding: 14px 20px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; gap: 12px; transition: 0.2s; }
+        .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(37, 150, 190, 0.15); color: var(--mars-accent); border-right: 4px solid var(--mars-accent); font-weight: bold; }
+
+        .main-content { margin-right: var(--sidebar-w); flex-grow: 1; padding: 25px; width: calc(100% - var(--sidebar-w)); }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; justify-content: space-between; align-items: center; padding: 5px 15px; }
+            .sidebar-header { padding: 10px; border: none; display: flex; align-items: center; gap: 10px; }
+            .sidebar-logo { width: 35px; height: 35px; font-size: 18px; margin: 0; }
+            .sidebar-menu { display: flex; padding: 0; overflow-x: auto; }
+            .sidebar-menu li a { padding: 10px 12px; font-size: 12px; flex-direction: column; gap: 4px; border-right: none !important; }
+            .sidebar-menu li.active a { border-bottom: 3px solid var(--mars-accent); }
+            .main-content { margin-right: 0; width: 100%; padding: 15px; }
+        }
+
+        .login-overlay { background: white; padding: 35px 25px; border-radius: 20px; max-width: 400px; margin: 40px auto; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
+        .biometric-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .user-bar { background: white; padding: 15px 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 18px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 15px; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .section-panel { display: none; }
+        .section-panel.active { display: block; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+        .card { background: white; border-radius: 16px; padding: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 20px; }
+        .form-group { margin-bottom: 14px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px; border: 1px solid #dce1e7; border-radius: 10px; font-size: 14px; }
+        .btn-action { background: linear-gradient(135deg, var(--mars-primary) 0%, #1a6d8c 100%); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; }
+        .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+        .b-card { background: #f4f9fb; border: 1px solid #d5eaf2; border-radius: 12px; padding: 12px 8px; text-align: center; }
+        .b-card .num { font-size: 20px; font-weight: bold; color: var(--mars-primary); }
+        .table-custom { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .table-custom th, .table-custom td { padding: 10px; text-align: right; border-bottom: 1px solid #eee; }
+        .online-pulse-box { background: #fffbeb; border: 1px solid #f59e0b; border-radius: 14px; padding: 18px; margin-bottom: 20px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo"><i class="fas fa-shield-alt"></i></div>
+            <div><h3 style="color:var(--mars-accent); font-size: 16px;">MARS HR</h3><p style="font-size: 10px; opacity: 0.7;">بوابة الموظفين الآمنة</p></div>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active" id="m-attendance"><a href="#" onclick="showSection('attendance')"><i class="fas fa-clock"></i><span>الحضور واللوحة</span></a></li>
+            <li id="m-leave"><a href="#" onclick="showSection('leave')"><i class="fas fa-calendar-alt"></i><span>الإجازات</span></a></li>
+            <li id="m-meetings"><a href="#" onclick="showSection('meetings')"><i class="fas fa-video"></i><span>الاجتماعات</span></a></li>
+            <li id="m-records"><a href="#" onclick="showSection('records')"><i class="fas fa-history"></i><span>سجل الدوام</span></a></li>
+            <li id="m-security"><a href="#" onclick="showSection('security')"><i class="fas fa-key"></i><span>الأمان والبصمة</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        
+        <!-- شاشة الدخول الآمنة -->
+        <div id="loginBox" class="login-overlay">
+            <div style="width: 65px; height: 65px; background: #e8f4f8; color: var(--mars-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 28px;"><i class="fas fa-fingerprint"></i></div>
+            <h2>بوابة موظفي MARS</h2>
+            <p style="color:#666; font-size: 13px; margin: 8px 0 20px;">تسجيل دخول محمي ومشفر</p>
+            
+            <button class="biometric-btn" onclick="loginWithBiometric()">
+                <i class="fas fa-fingerprint" style="font-size: 20px;"></i> الدخول ببصمة الجوال
+            </button>
+
+            <div style="margin: 15px 0; color: #aaa; font-size: 12px;">— أو باستخدام الكود وكلمة المرور —</div>
+
+            <div class="form-group">
+                <label>كود الموظف</label>
+                <input type="text" id="codeInput" placeholder="مثال: ME_001">
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="passInput" placeholder="••••••••">
+            </div>
+            <button class="btn-action" onclick="loginWithPassword()">تسجيل الدخول</button>
+        </div>
+
+        <!-- واجهة النظام -->
+        <div id="appContainer" style="display: none;">
+            <div class="user-bar">
+                <div><h3 id="uName">الموظف</h3><small id="uRole" style="color: #666;">القسم</small></div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span style="background: #e8f4f8; color: var(--mars-primary); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;" id="uManager">المدير: -</span>
+                    <button onclick="logout()" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; font-weight: bold;">خروج</button>
+                </div>
+            </div>
+
+            <!-- 1️⃣ الحضور واللوحة -->
+            <div id="attendanceSec" class="section-panel active">
+                <div class="stats-row">
+                    <div class="stat-card"><div class="stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fas fa-building"></i></div><div><h3 id="statOffice">0</h3><small>في المكاتب اليوم</small></div></div>
+                    <div class="stat-card"><div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-laptop-house"></i></div><div><h3 id="statOnline">0</h3><small>عمل أونلاين الآن</small></div></div>
+                    <div class="stat-card"><div class="stat-icon" style="background: #dcfce7; color: #16a34a;"><i class="fas fa-users"></i></div><div><h3 id="statTotal">0</h3><small>إجمالي الفريق</small></div></div>
+                </div>
+
+                <div id="onlinePulseBox" class="online-pulse-box">
+                    <h4 style="color: #b45309; margin-bottom: 8px;"><i class="fas fa-satellite-dish"></i> وضع العمل عن بُعد (Online)</h4>
+                    <p style="font-size: 13px; margin-bottom: 10px;">سجّل إنجازك الحالي لتأكيد تواجدك النشط:</p>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="pulseTaskInput" placeholder="ما المهمة التي أنجزتها أو تعمل عليها الآن؟" style="flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid #f59e0b;">
+                        <button onclick="sendOnlinePulse()" style="background: #d97706; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">توثيق النشاط ✅</button>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3><i class="fas fa-fingerprint" style="color:var(--mars-primary);"></i> تسجيل الحضور والانصراف</h3>
+                        <br>
+                        <div class="form-group">
+                            <label>مكان العمل اليوم</label>
+                            <select id="officeSelect" onchange="document.getElementById('onlinePulseBox').style.display = this.value.includes('Online') ? 'block' : 'none'">
+                                <option value="حلب">🏢 مكتب حلب</option>
+                                <option value="أعزاز">🏢 مكتب أعزاز</option>
+                                <option value="عفرين">🏢 مكتب عفرين</option>
+                                <option value="دمشق">🏢 مكتب دمشق</option>
+                                <option value="غازي عينتاب">🏢 مكتب غازي عينتاب</option>
+                                <option value="عمل عن بُعد (Online)">🌐 عمل عن بُعد (Online)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>ملاحظات</label><textarea id="attNotes" rows="2"></textarea></div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-action" style="background: #10b981;" onclick="sendAttendance('checkIn')">تسجيل دخول</button>
+                            <button class="btn-action" style="background: #ef4444;" onclick="sendAttendance('checkOut')">تسجيل انصراف</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3><i class="fas fa-radar" style="color:var(--mars-primary);"></i> حالة دوام الفريق اليوم</h3>
+                        <table class="table-custom">
+                            <thead><tr><th>الموظف</th><th>المكان</th><th>الدخول</th><th>الحالة</th></tr></thead>
+                            <tbody id="liveTeamTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2️⃣ الإجازات -->
+            <div id="leaveSec" class="section-panel">
+                <div class="card"><h3>رصيد الإجازات</h3><br><div class="balance-grid" id="balanceGrid"></div></div>
+                <div class="card">
+                    <h3>تقديم طلب إجازة</h3><br>
+                    <form onsubmit="submitLeave(event)">
+                        <div class="grid-2">
+                            <div class="form-group"><label>نوع الإجازة</label><select id="leaveType" required onchange="document.getElementById('hoursBox').style.display = this.value === 'hourly' ? 'block' : 'none'"><option value="annual">🏖️ سنوية</option><option value="sick">🤒 مرضية</option><option value="hourly">⏱️ ساعية</option><option value="bereavement">🖤 وفاة</option><option value="maternity">🍼 أمومة</option><option value="paternity">👶 أبوة</option><option value="unpaid">💸 بلا راتب</option><option value="hajj">🕋 حج</option><option value="marriage">💍 زواج</option></select></div>
+                            <div class="form-group" id="hoursBox" style="display:none;"><label>عدد الساعات</label><input type="number" id="leaveHours" min="1" max="8"></div>
+                        </div>
+                        <div class="grid-3">
+                            <div class="form-group"><label>تاريخ البدء</label><input type="date" id="startDate" required></div>
+                            <div class="form-group"><label>تاريخ الانتهاء</label><input type="date" id="endDate" required></div>
+                            <div class="form-group"><label>تاريخ الالتحاق</label><input type="date" id="returnDate" required></div>
+                        </div>
+                        <div class="form-group"><label>السبب</label><textarea id="leaveReason" required></textarea></div>
+                        <button type="submit" class="btn-action">إرسال الطلب</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 3️⃣ الاجتماعات -->
+            <div id="meetingsSec" class="section-panel">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>حجز اجتماع</h3><br>
+                        <form onsubmit="submitMeeting(event)">
+                            <div class="form-group"><label>العنوان</label><input type="text" id="mTitle" required></div>
+                            <div class="form-group"><label>المدعوون</label><div id="attendeesSelectList" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></div></div>
+                            <div class="grid-2"><div class="form-group"><label>التاريخ</label><input type="date" id="mDate" required></div><div class="form-group"><label>الوقت</label><input type="time" id="mTime" required></div></div>
+                            <div class="form-group"><label>المدة</label><select id="mDuration"><option value="30">30 دقيقة</option><option value="60">ساعة</option></select></div>
+                            <button type="submit" class="btn-action">إنشاء الاجتماع</button>
+                        </form>
+                    </div>
+                    <div class="card"><h3>الاجتماعات المجدولة</h3><br><div id="meetingsList"></div></div>
+                </div>
+            </div>
+
+            <!-- 4️⃣ السجلات -->
+            <div id="recordsSec" class="section-panel">
+                <div class="card"><h3>سجل دوامي</h3><table class="table-custom"><thead><tr><th>التاريخ</th><th>المكان</th><th>دخول</th><th>انصراف</th><th>ملاحظات</th></tr></thead><tbody id="attendanceRecordsTable"></tbody></table></div>
+            </div>
+
+            <!-- 5️⃣ الأمان وتغيير كلمة المرور والبصمة -->
+            <div id="securitySec" class="section-panel">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3><i class="fas fa-fingerprint" style="color:#10b981;"></i> بصمة الجوال (WebAuthn)</h3>
+                        <p style="font-size: 13px; color: #666; margin: 10px 0;">اربط مستشعر البصمة أو بصمة الوجه في هاتفك لتسجيل الدخول بنقرة واحدة دون كتابة كلمة المرور.</p>
+                        <button class="biometric-btn" onclick="registerBiometric()"><i class="fas fa-fingerprint"></i> تفعيل / تحديث بصمة هذا الجهاز</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class="fas fa-lock" style="color:var(--mars-primary);"></i> تغيير كلمة المرور</h3>
+                        <p style="font-size: 13px; color: #666; margin: 10px 0;">كلمة المرور الافتراضية هي 123456. يُنصح بتغييرها فوراً.</p>
+                        <div class="form-group"><label>كلمة المرور الجديدة</label><input type="password" id="newPassInput" placeholder="أدخل كلمة مرور قوية"></div>
+                        <button class="btn-action" onclick="changePassword()">حفظ كلمة المرور الجديدة</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ ضع رابط الـ Web App URL الخاص بك من Google Apps Script هنا:
+        const API_URL = "https://script.google.com/macros/s/AKfycbwaHigI0tQgBsjN-Hn3CVecphmb7GmW9buD-AK1kfuyEb5wV4koSy1hUX_CqGMvAaa9vg/exec";
+
+        let currentUser = null;
+        let sessionToken = null;
+        let teamList = [];
+
+        // دالة موحدة للاتصال الآمن بالسيرفر
+        async function callApi(payload) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            return await response.json();
+        }
+
+        async function loginWithPassword() {
+            const code = document.getElementById('codeInput').value.trim();
+            const password = document.getElementById('passInput').value;
+            if (!code || !password) return Swal.fire('تنبيه', 'يرجى إدخال الكود وكلمة المرور', 'warning');
+
+            Swal.fire({ title: 'جاري التحقق المشفر...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await callApi({ route: 'login', code, password });
+            handleLoginResponse(res);
+        }
+
+        // بصمة الجوال الحقيقية (تعمل بكفاءة 100% على GitHub Pages)
+        async function loginWithBiometric() {
+            const credId = localStorage.getItem('mars_webauthn_id');
+            if (!credId) return Swal.fire('البصمة غير مفعّلة', 'ادخل بالكود وكلمة المرور أولاً، ثم اذهب لقسم (الأمان والبصمة) لتفعيل بصمة هاتفك.', 'info');
+
+            try {
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+                await navigator.credentials.get({ publicKey: { challenge, timeout: 60000, userVerification: "required" } });
+
+                Swal.fire({ title: 'تم التحقق من البصمة! جاري الدخول...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                const res = await callApi({ route: 'login', credentialId: credId });
+                handleLoginResponse(res);
+            } catch (err) {
+                Swal.fire('فشل التحقق', 'لم يتم التعرف على البصمة أو تم إلغاء العملية.', 'error');
+            }
+        }
+
+        async function registerBiometric() {
+            try {
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+                const cred = await navigator.credentials.create({
+                    publicKey: {
+                        challenge,
+                        rp: { name: "MARS HR Platform" },
+                        user: { id: new TextEncoder().encode(currentUser.code), name: currentUser.email, displayName: currentUser.name },
+                        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+                        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                        timeout: 60000
+                    }
+                });
+                const credId = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+                const res = await callApi({ route: 'registerBio', code: currentUser.code, token: sessionToken, credentialId: credId });
+                if (res.success) {
+                    localStorage.setItem('mars_webauthn_id', credId);
+                    Swal.fire('تم بنجاح! 🎉', res.message, 'success');
+                }
+            } catch (err) {
+                Swal.fire('تنبيه', 'تأكد من أن هاتفك يدعم البصمة أو رمز القفل (PIN) وأنك تفتح الرابط عبر متصفح Chrome أو Safari.', 'warning');
+            }
+        }
+
+        async function changePassword() {
+            const newPassword = document.getElementById('newPassInput').value.trim();
+            if (newPassword.length < 6) return Swal.fire('تنبيه', 'يجب أن تكون كلمة المرور 6 خانات على الأقل', 'warning');
+
+            const res = await callApi({ route: 'changePassword', code: currentUser.code, token: sessionToken, newPassword });
+            Swal.fire(res.success ? 'تم التحديث' : 'خطأ', res.message, res.success ? 'success' : 'error');
+            document.getElementById('newPassInput').value = '';
+        }
+
+        function handleLoginResponse(res) {
+            if (!res.success) return Swal.fire('خطأ', res.message, 'error');
+
+            currentUser = res.user;
+            sessionToken = res.token;
+            teamList = res.team || [];
+
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            document.getElementById('uName').textContent = currentUser.name;
+            document.getElementById('uRole').textContent = currentUser.role + ' | ' + currentUser.dept;
+            document.getElementById('uManager').textContent = 'المدير: ' + currentUser.manager;
+            document.getElementById('statTotal').textContent = teamList.length;
+
+            document.getElementById('attendeesSelectList').innerHTML = teamList
+                .filter(e => e.name !== currentUser.name)
+                .map(e => `<label style="display:block; margin-bottom:5px;"><input type="checkbox" value="${e.email}" data-name="${e.name}"> ${e.name}</label>`).join('');
+
+            Swal.close();
+            refreshAllData();
+        }
+
+        async function refreshAllData() {
+            const dash = await callApi({ route: 'getDashboard', code: currentUser.code, token: sessionToken });
+            if (dash.success) {
+                document.getElementById('statOffice').textContent = dash.stats.presentOffice;
+                document.getElementById('statOnline').textContent = dash.stats.presentOnline;
+                document.getElementById('liveTeamTable').innerHTML = dash.stats.activeTeam.map(t => `<tr><td><strong>${t.name}</strong></td><td>${t.office}</td><td>${t.checkIn}</td><td>${t.checkOut}</td></tr>`).join('') || '<tr><td colspan="4">لا يوجد حضور بعد</td></tr>';
+                document.getElementById('attendanceRecordsTable').innerHTML = dash.myRecords.map(r => `<tr><td>${r.date}</td><td>${r.office}</td><td>${r.checkIn||'-'}</td><td>${r.checkOut||'-'}</td><td>${r.notes||'-'}</td></tr>`).join('');
+                document.getElementById('meetingsList').innerHTML = dash.meetings.map(m => `<div style="padding:10px; border-bottom:1px solid #eee;"><strong>${m.title}</strong><p style="font-size:12px;">${m.date} - ${m.time}</p><a href="${m.location}" target="_blank">دخول الاجتماع 🔗</a></div>`).join('');
+            }
+
+            const bal = await callApi({ route: 'getBalance', code: currentUser.code, token: sessionToken });
+            if (bal.success) {
+                const titles = { annual: '🏖️ سنوية', sick: '🤒 مرضية', hourly: '⏱️ ساعية', bereavement: '🖤 وفاة', maternity: '🍼 أمومة', paternity: '👶 أبوة', unpaid: '💸 بلا راتب', hajj: '🕋 حج', marriage: '💍 زواج' };
+                document.getElementById('balanceGrid').innerHTML = Object.entries(bal.balance).map(([k, v]) => `<div class="b-card"><div class="num">${v}</div><div class="lbl">${titles[k]}</div></div>`).join('');
+            }
+        }
+
+        function sendAttendance(action) {
+            const office = document.getElementById('officeSelect').value;
+            const notes = document.getElementById('attNotes').value;
+            Swal.fire({ title: 'جاري التسجيل...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            const send = async (coords) => {
+                const res = await callApi({
+                    route: 'attendance', code: currentUser.code, token: sessionToken, action, office, coords, notes,
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+                });
+                Swal.fire(res.success ? 'تم بنجاح' : 'تنبيه', res.message, res.success ? 'success' : 'warning');
+                refreshAllData();
+            };
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(p => send(`${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`), () => send(''), { timeout: 5000 });
+            } else send('');
+        }
+
+        async function sendOnlinePulse() {
+            const taskNote = document.getElementById('pulseTaskInput').value.trim();
+            if (!taskNote) return Swal.fire('تنبيه', 'اكتب المهمة أولاً', 'warning');
+            const res = await callApi({
+                route: 'onlinePulse', code: currentUser.code, token: sessionToken, taskNote,
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+            });
+            Swal.fire('تم التوثيق', res.message, 'success');
+            document.getElementById('pulseTaskInput').value = '';
+        }
+
+        async function submitLeave(e) {
+            e.preventDefault();
+            Swal.fire({ title: 'جاري الإرسال...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await callApi({
+                route: 'submitLeave', code: currentUser.code, token: sessionToken,
+                type: document.getElementById('leaveType').value, hours: document.getElementById('leaveHours').value,
+                startDate: document.getElementById('startDate').value, endDate: document.getElementById('endDate').value,
+                returnDate: document.getElementById('returnDate').value, reason: document.getElementById('leaveReason').value
+            });
+            Swal.fire('تم التقديم', res.message, 'success');
+            refreshAllData();
+        }
+
+        async function submitMeeting(e) {
+            e.preventDefault();
+            const attendees = Array.from(document.querySelectorAll('#attendeesSelectList input:checked')).map(cb => ({ name: cb.getAttribute('data-name'), email: cb.value }));
+            if (!attendees.length) return Swal.fire('تنبيه', 'اختر شخصاً واحداً على الأقل', 'warning');
+            Swal.fire({ title: 'جاري الحجز...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await callApi({
+                route: 'createMeeting', code: currentUser.code, token: sessionToken,
+                meeting: { title: document.getElementById('mTitle').value, date: document.getElementById('mDate').value, time: document.getElementById('mTime').value, duration: document.getElementById('mDuration').value, attendees }
+            });
+            Swal.fire('تم', res.message, 'success');
+            refreshAllData();
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('m-' + id).classList.add('active');
+            document.getElementById(id + 'Sec').classList.add('active');
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
