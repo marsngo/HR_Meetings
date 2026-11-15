@@ -1,0 +1,18 @@
+{
+  "name": "MARS HR - منصة الموارد البشرية",
+  "short_name": "MARS HR",
+  "description": "نظام الحضور والانصراف والإجازات والاجتماعات لمنظمة MARS",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e242b",
+  "theme_color": "#2596be",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/9721/9721111.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
