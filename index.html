@@ -190,6 +190,10 @@
 
             <!-- 3️⃣ الاجتماعات -->
             <div id="meetingsSec" class="section-panel">
+                <div class="form-group">
+                    <label>تفاصيل / أجندة الاجتماع</label>
+                    <textarea id="mNotes" rows="2" placeholder="اكتب محاور الاجتماع أو الروابط المطلوبة..."></textarea>
+                </div>
                 <div class="grid-2">
                     <div class="card">
                         <h3>حجز اجتماع</h3><br>
@@ -395,6 +399,49 @@
         }
 
         async function submitMeeting(e) {
+    e.preventDefault();
+    const attendees = Array.from(document.querySelectorAll('#attendeesSelectList input:checked'))
+        .map(cb => ({ name: cb.getAttribute('data-name'), email: cb.value }));
+    
+    if (!attendees.length) {
+        return Swal.fire('تنبيه', 'يرجى اختيار شخص واحد على الأقل للاجتماع معه', 'warning');
+    }
+
+    Swal.fire({ title: 'جاري فحص المواعيد وإنشاء رابط Meet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    const res = await callApi({
+        route: 'createMeeting',
+        code: currentUser.code,
+        token: sessionToken,
+        meeting: {
+            title: document.getElementById('mTitle').value,
+            notes: document.getElementById('mNotes').value,
+            date: document.getElementById('mDate').value,
+            time: document.getElementById('mTime').value,
+            duration: document.getElementById('mDuration').value,
+            attendees: attendees
+        }
+    });
+
+    if (res.success) {
+        Swal.fire({
+            icon: 'success',
+            title: 'تم حجز الاجتماع بنجاح!',
+            html: `<p>${res.message}</p><br><a href="${res.meetLink}" target="_blank" style="color:#2596be; font-weight:bold;">فتح رابط Google Meet الآن 🔗</a>`
+        });
+        document.getElementById('mTitle').value = '';
+        document.getElementById('mNotes').value = '';
+        refreshAllData();
+    } else {
+        // إظهار رسالة التعارض بوضوح ليقوم الموظف بتغيير الموعد
+        Swal.fire({
+            icon: res.conflict ? 'warning' : 'error',
+            title: res.conflict ? 'الموعد محجوز مسبقاً!' : 'خطأ',
+            text: res.message,
+            confirmButtonText: 'تغيير الموعد'
+        });
+    }
+}(e) {
             e.preventDefault();
             const attendees = Array.from(document.querySelectorAll('#attendeesSelectList input:checked')).map(cb => ({ name: cb.getAttribute('data-name'), email: cb.value }));
             if (!attendees.length) return Swal.fire('تنبيه', 'اختر شخصاً واحداً على الأقل', 'warning');
