@@ -1,102 +1,236 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MARS HR - منصة الموارد البشرية</title>
+    <title>MARS 2050 | نظام الموارد البشرية الذكي</title>
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#2596be">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9721/9721111.png">
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js');
-        });
-      }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+      }
+    </script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        :root { --mars-primary: #2596be; --mars-dark: #1e242b; --mars-accent: #c7b078; --mars-bg: #f0f4f8; --sidebar-w: 250px; }
-        body { background-color: var(--mars-bg); color: #333; display: flex; min-height: 100vh; }
+        :root {
+            --bg-main: #090d16;
+            --bg-gradient: radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.15), transparent 40%),
+                           radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.15), transparent 40%);
+            --glass-bg: rgba(17, 25, 40, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.09);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-cyan: #0ea5e9;
+            --accent-indigo: #6366f1;
+            --accent-emerald: #10b981;
+            --input-bg: rgba(15, 23, 42, 0.65);
+            --sidebar-w: 265px;
+        }
 
-        .sidebar { width: var(--sidebar-w); background: linear-gradient(180deg, var(--mars-dark) 0%, #111519 100%); color: white; position: fixed; right: 0; top: 0; bottom: 0; display: flex; flex-direction: column; z-index: 100; }
-        .sidebar-header { padding: 25px 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .sidebar-logo { width: 55px; height: 55px; background: linear-gradient(135deg, var(--mars-primary), #1b7291); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: white; font-size: 26px; }
-        .sidebar-menu { list-style: none; padding: 15px 0; flex-grow: 1; }
-        .sidebar-menu li a { display: flex; align-items: center; padding: 14px 20px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; gap: 12px; transition: 0.2s; }
-        .sidebar-menu li a:hover, .sidebar-menu li.active a { background: rgba(37, 150, 190, 0.15); color: var(--mars-accent); border-right: 4px solid var(--mars-accent); font-weight: bold; }
+        [data-theme="light"] {
+            --bg-main: #f1f5f9;
+            --bg-gradient: radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.12), transparent 45%),
+                           radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.1), transparent 45%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(15, 23, 42, 0.08);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --input-bg: rgba(248, 250, 252, 0.9);
+        }
 
-        .main-content { margin-right: var(--sidebar-w); flex-grow: 1; padding: 25px; width: calc(100% - var(--sidebar-w)); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body {
+            background-color: var(--bg-main);
+            background-image: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* القائمة الجانبية الزجاجية */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            position: fixed; right: 0; top: 0; bottom: 0;
+            display: flex; flex-direction: column; z-index: 100;
+            transition: all 0.3s ease;
+        }
+        .sidebar-header { padding: 28px 20px; text-align: center; border-bottom: 1px solid var(--glass-border); }
+        .sidebar-logo {
+            width: 60px; height: 60px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-indigo));
+            border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px; color: white; font-size: 28px;
+            box-shadow: 0 0 25px rgba(14, 165, 233, 0.45);
+            animation: floatLogo 4s ease-in-out infinite;
+        }
+        @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .sidebar-menu { list-style: none; padding: 18px 12px; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
+        .sidebar-menu li a {
+            display: flex; align-items: center; padding: 13px 16px;
+            color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500;
+            border-radius: 12px; gap: 12px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-menu li a:hover { background: rgba(14, 165, 233, 0.1); color: var(--text-main); transform: translateX(-4px); }
+        .sidebar-menu li.active a {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(99, 102, 241, 0.2));
+            color: var(--accent-cyan); font-weight: 700;
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15);
+        }
+
+        .main-content { margin-right: var(--sidebar-w); flex-grow: 1; padding: 28px; width: calc(100% - var(--sidebar-w)); }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; justify-content: space-between; align-items: center; padding: 5px 15px; }
-            .sidebar-header { padding: 10px; border: none; display: flex; align-items: center; gap: 10px; }
-            .sidebar-logo { width: 35px; height: 35px; font-size: 18px; margin: 0; }
-            .sidebar-menu { display: flex; padding: 0; overflow-x: auto; }
-            .sidebar-menu li a { padding: 10px 12px; font-size: 12px; flex-direction: column; gap: 4px; border-right: none !important; }
-            .sidebar-menu li.active a { border-bottom: 3px solid var(--mars-accent); }
+            .sidebar { width: 100%; height: auto; position: sticky; top: 0; flex-direction: row; justify-content: space-between; align-items: center; padding: 8px 12px; border-left: none; border-bottom: 1px solid var(--glass-border); }
+            .sidebar-header { padding: 0; border: none; display: flex; align-items: center; gap: 10px; }
+            .sidebar-logo { width: 38px; height: 38px; font-size: 18px; margin: 0; animation: none; }
+            .sidebar-menu { flex-direction: row; padding: 0; overflow-x: auto; gap: 4px; }
+            .sidebar-menu li a { padding: 8px 10px; font-size: 11px; flex-direction: column; gap: 4px; }
+            .sidebar-menu li a:hover { transform: none; }
             .main-content { margin-right: 0; width: 100%; padding: 15px; }
         }
 
-        .login-overlay { background: white; padding: 35px 25px; border-radius: 20px; max-width: 400px; margin: 40px auto; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
-        .biometric-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
-        .user-bar { background: white; padding: 15px 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; }
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 18px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 15px; }
-        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .section-panel { display: none; }
+        /* البطاقات الزجاجية */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+            margin-bottom: 22px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover { box-shadow: 0 12px 40px rgba(14, 165, 233, 0.1); }
+
+        /* شاشة تسجيل الدخول */
+        .login-overlay { max-width: 420px; margin: 45px auto; text-align: center; }
+        .biometric-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white; border: none; padding: 15px; border-radius: 14px;
+            font-weight: 700; cursor: pointer; width: 100%; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-bottom: 18px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+            transition: all 0.25s ease;
+        }
+        .biometric-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5); }
+
+        /* الشريط العلوي */
+        .top-hud {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px; padding: 16px 24px;
+        }
+        .hud-clock {
+            font-size: 20px; font-weight: 800; color: var(--accent-cyan);
+            letter-spacing: 1px; background: rgba(14, 165, 233, 0.1);
+            padding: 6px 14px; border-radius: 12px; border: 1px solid rgba(14, 165, 233, 0.25);
+        }
+
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 22px; }
+        .stat-card { display: flex; align-items: center; gap: 16px; padding: 20px; margin-bottom: 0; }
+        .stat-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+
+        .section-panel { display: none; animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
         .section-panel.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
-        .card { background: white; border-radius: 16px; padding: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 20px; }
-        .form-group { margin-bottom: 14px; text-align: right; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px; border: 1px solid #dce1e7; border-radius: 10px; font-size: 14px; }
-        .btn-action { background: linear-gradient(135deg, var(--mars-primary) 0%, #1a6d8c 100%); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; }
-        .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
-        .b-card { background: #f4f9fb; border: 1px solid #d5eaf2; border-radius: 12px; padding: 12px 8px; text-align: center; }
-        .b-card .num { font-size: 20px; font-weight: bold; color: var(--mars-primary); }
+
+        .form-group { margin-bottom: 15px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--text-muted); }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 14px; background: var(--input-bg);
+            border: 1px solid var(--glass-border); border-radius: 12px;
+            color: var(--text-main); font-size: 14px; transition: 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-indigo) 100%);
+            color: white; border: none; padding: 13px; border-radius: 12px;
+            font-weight: 700; cursor: pointer; width: 100%; font-size: 14px;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); transition: 0.25s;
+        }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(99, 102, 241, 0.4); }
+
+        .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 12px; }
+        .b-card {
+            background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 14px; padding: 14px 8px; text-align: center; transition: 0.2s;
+        }
+        .b-card:hover { transform: translateY(-3px); border-color: var(--accent-cyan); }
+        .b-card .num { font-size: 22px; font-weight: 800; color: var(--accent-cyan); }
+        .b-card .lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
         .table-custom { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        .table-custom th, .table-custom td { padding: 10px; text-align: right; border-bottom: 1px solid #eee; }
-        .online-pulse-box { background: #fffbeb; border: 1px solid #f59e0b; border-radius: 14px; padding: 18px; margin-bottom: 20px; display: none; }
+        .table-custom th, .table-custom td { padding: 12px 10px; text-align: right; border-bottom: 1px solid var(--glass-border); }
+        .table-custom th { color: var(--accent-cyan); font-weight: 700; font-size: 12px; text-transform: uppercase; }
+
+        .online-pulse-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 16px; padding: 20px; margin-bottom: 22px; display: none;
+        }
+        .pill-btn {
+            background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border);
+            color: var(--text-main); padding: 7px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .pill-btn:hover { background: rgba(14, 165, 233, 0.2); border-color: var(--accent-cyan); }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo"><i class="fas fa-shield-alt"></i></div>
-            <div><h3 style="color:var(--mars-accent); font-size: 16px;">MARS HR</h3><p style="font-size: 10px; opacity: 0.7;">بوابة الموظفين الآمنة</p></div>
+            <div class="sidebar-logo"><i class="fas fa-atom"></i></div>
+            <div>
+                <h3 style="color:var(--accent-cyan); font-size: 18px; font-weight: 800;">MARS 2050</h3>
+                <p style="font-size: 11px; color: var(--text-muted);">الجيل القادم للموارد البشرية</p>
+            </div>
         </div>
         <ul class="sidebar-menu">
-            <li class="active" id="m-attendance"><a href="#" onclick="showSection('attendance')"><i class="fas fa-clock"></i><span>الحضور واللوحة</span></a></li>
-            <li id="m-leave"><a href="#" onclick="showSection('leave')"><i class="fas fa-calendar-alt"></i><span>الإجازات</span></a></li>
+            <li class="active" id="m-attendance"><a href="#" onclick="showSection('attendance')"><i class="fas fa-chart-pie"></i><span>القيادة والحضور</span></a></li>
+            <li id="m-leave"><a href="#" onclick="showSection('leave')"><i class="fas fa-plane-departure"></i><span>الإجازات الذكية</span></a></li>
             <li id="m-meetings"><a href="#" onclick="showSection('meetings')"><i class="fas fa-video"></i><span>الاجتماعات</span></a></li>
             <li id="m-records"><a href="#" onclick="showSection('records')"><i class="fas fa-history"></i><span>سجل الدوام</span></a></li>
-            <li id="m-security"><a href="#" onclick="showSection('security')"><i class="fas fa-key"></i><span>الأمان والبصمة</span></a></li>
-            <li id="m-hrAdmin" style="display:none;"><a href="#" onclick="showSection('hrAdmin')"><i class="fas fa-users-cog"></i><span>إدارة الموظفين (HR)</span></a></li>
+            <li id="m-security"><a href="#" onclick="showSection('security')"><i class="fas fa-fingerprint"></i><span>الأمان والبصمة</span></a></li>
+            <li id="m-hrAdmin" style="display:none;"><a href="#" onclick="showSection('hrAdmin')"><i class="fas fa-users-cog"></i><span>إدارة الموظفين</span></a></li>
+            <li id="m-settings" style="display:none;"><a href="#" onclick="showSection('settings')"><i class="fas fa-sliders-h"></i><span>إعدادات الإيميل</span></a></li>
         </ul>
     </div>
 
     <div class="main-content">
         
-        <!-- شاشة الدخول الآمنة -->
-        <div id="loginBox" class="login-overlay">
-            <div style="width: 65px; height: 65px; background: #e8f4f8; color: var(--mars-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 28px;"><i class="fas fa-fingerprint"></i></div>
-            <h2>بوابة موظفي MARS</h2>
-            <p style="color:#666; font-size: 13px; margin: 8px 0 20px;">تسجيل دخول محمي ومشفر</p>
+        <!-- شاشة الدخول -->
+        <div id="loginBox" class="glass-card login-overlay">
+            <div class="sidebar-logo" style="margin-bottom: 18px;"><i class="fas fa-fingerprint"></i></div>
+            <h2 style="font-weight: 800;">بوابة MARS المستقبلية</h2>
+            <p style="color:var(--text-muted); font-size: 13px; margin: 8px 0 24px;">نظام مصادقة بيومتري ومشفّر بالكامل</p>
             
             <button class="biometric-btn" onclick="loginWithBiometric()">
-                <i class="fas fa-fingerprint" style="font-size: 20px;"></i> الدخول ببصمة الجوال
+                <i class="fas fa-fingerprint" style="font-size: 22px;"></i> الدخول الفوري ببصمة الجوال
             </button>
 
-            <div style="margin: 15px 0; color: #aaa; font-size: 12px;">— أو باستخدام الكود وكلمة المرور —</div>
+            <div style="margin: 16px 0; color: var(--text-muted); font-size: 12px;">— أو باستخدام الكود الوظيفي —</div>
 
             <div class="form-group">
                 <label>كود الموظف</label>
@@ -106,42 +240,57 @@
                 <label>كلمة المرور</label>
                 <input type="password" id="passInput" placeholder="••••••••">
             </div>
-            <button class="btn-action" onclick="loginWithPassword()">تسجيل الدخول</button>
+            <button class="btn-action" onclick="loginWithPassword()">تسجيل الدخول الآمن 🚀</button>
         </div>
 
         <!-- واجهة النظام -->
         <div id="appContainer" style="display: none;">
-            <div class="user-bar">
-                <div><h3 id="uName">الموظف</h3><small id="uRole" style="color: #666;">القسم</small></div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <span style="background: #e8f4f8; color: var(--mars-primary); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;" id="uManager">المدير: -</span>
-                    <button onclick="logout()" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; font-weight: bold;">خروج</button>
+            
+            <!-- الشريط العلوي HUD -->
+            <div class="glass-card top-hud">
+                <div>
+                    <h3 id="uName" style="font-size: 19px; font-weight: 800;">الموظف</h3>
+                    <small id="uRole" style="color: var(--text-muted);">القسم</small>
+                </div>
+                <div class="hud-clock" id="liveClock">00:00:00</div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span class="pill-btn" style="color: var(--accent-cyan); border-color: rgba(14,165,233,0.3);" id="uManager">المدير: -</span>
+                    <button class="pill-btn" onclick="toggleTheme()" title="تبديل المظهر"><i class="fas fa-adjust"></i> المظهر</button>
+                    <button class="pill-btn" onclick="logout()" style="color: #f87171; border-color: rgba(248,113,113,0.3);"><i class="fas fa-power-off"></i> خروج</button>
                 </div>
             </div>
 
-            <!-- 1️⃣ الحضور واللوحة -->
+            <!-- 1️⃣ القيادة والحضور -->
             <div id="attendanceSec" class="section-panel active">
                 <div class="stats-row">
-                    <div class="stat-card"><div class="stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="fas fa-building"></i></div><div><h3 id="statOffice">0</h3><small>في المكاتب اليوم</small></div></div>
-                    <div class="stat-card"><div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-laptop-house"></i></div><div><h3 id="statOnline">0</h3><small>عمل أونلاين الآن</small></div></div>
-                    <div class="stat-card"><div class="stat-icon" style="background: #dcfce7; color: #16a34a;"><i class="fas fa-users"></i></div><div><h3 id="statTotal">0</h3><small>إجمالي الفريق</small></div></div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon" style="background: rgba(14,165,233,0.15); color: #0ea5e9;"><i class="fas fa-building"></i></div>
+                        <div><h2 id="statOffice" style="font-weight:800;">0</h2><small style="color:var(--text-muted);">في المكاتب اليوم</small></div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon" style="background: rgba(245,158,11,0.15); color: #f59e0b;"><i class="fas fa-satellite"></i></div>
+                        <div><h2 id="statOnline" style="font-weight:800;">0</h2><small style="color:var(--text-muted);">عمل أونلاين الآن</small></div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon" style="background: rgba(16,185,129,0.15); color: #10b981;"><i class="fas fa-users"></i></div>
+                        <div><h2 id="statTotal" style="font-weight:800;">0</h2><small style="color:var(--text-muted);">إجمالي الفريق</small></div>
+                    </div>
                 </div>
 
                 <div id="onlinePulseBox" class="online-pulse-box">
-                    <h4 style="color: #b45309; margin-bottom: 8px;"><i class="fas fa-satellite-dish"></i> وضع العمل عن بُعد (Online)</h4>
-                    <p style="font-size: 13px; margin-bottom: 10px;">سجّل إنجازك الحالي لتأكيد تواجدك النشط:</p>
+                    <h4 style="color: #fbbf24; margin-bottom: 8px;"><i class="fas fa-broadcast-tower"></i> وضع العمل عن بُعد نشط (Online Telemetry)</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">سجّل نبضة إنجازك الحالية لتوثيق ساعات عملك الأونلاين:</p>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="pulseTaskInput" placeholder="ما المهمة التي أنجزتها أو تعمل عليها الآن؟" style="flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid #f59e0b;">
-                        <button onclick="sendOnlinePulse()" style="background: #d97706; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">توثيق النشاط ✅</button>
+                        <input type="text" id="pulseTaskInput" placeholder="ما المهمة التي أنجزتها أو تعمل عليها الآن؟" style="flex-grow: 1; padding: 11px; border-radius: 10px; border: 1px solid rgba(245,158,11,0.4); background: var(--input-bg); color: var(--text-main);">
+                        <button onclick="sendOnlinePulse()" style="background: #f59e0b; color: #0f172a; border: none; padding: 11px 22px; border-radius: 10px; font-weight: 800; cursor: pointer;">توثيق النشاط ⚡</button>
                     </div>
                 </div>
 
                 <div class="grid-2">
-                    <div class="card">
-                        <h3><i class="fas fa-fingerprint" style="color:var(--mars-primary);"></i> تسجيل الحضور والانصراف</h3>
-                        <br>
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 16px;"><i class="fas fa-fingerprint" style="color:var(--accent-cyan);"></i> تسجيل الحضور والانصراف الذكي</h3>
                         <div class="form-group">
-                            <label>مكان العمل اليوم</label>
+                            <label>موقع العمل اليوم</label>
                             <select id="officeSelect" onchange="document.getElementById('onlinePulseBox').style.display = this.value.includes('Online') ? 'block' : 'none'">
                                 <option value="حلب">🏢 مكتب حلب</option>
                                 <option value="أعزاز">🏢 مكتب أعزاز</option>
@@ -151,90 +300,133 @@
                                 <option value="عمل عن بُعد (Online)">🌐 عمل عن بُعد (Online)</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>ملاحظات</label><textarea id="attNotes" rows="2"></textarea></div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-action" style="background: #10b981;" onclick="sendAttendance('checkIn')">تسجيل دخول</button>
-                            <button class="btn-action" style="background: #ef4444;" onclick="sendAttendance('checkOut')">تسجيل انصراف</button>
+                        <div class="form-group"><label>ملاحظات / أهداف اليوم</label><textarea id="attNotes" rows="2" placeholder="اختياري..."></textarea></div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn-action" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="sendAttendance('checkIn')"><i class="fas fa-sign-in-alt"></i> بصمة الدخول</button>
+                            <button class="btn-action" style="background: linear-gradient(135deg, #ef4444, #dc2626);" onclick="sendAttendance('checkOut')"><i class="fas fa-sign-out-alt"></i> بصمة الانصراف</button>
                         </div>
                     </div>
 
-                    <div class="card">
-                        <h3><i class="fas fa-radar" style="color:var(--mars-primary);"></i> حالة دوام الفريق اليوم</h3>
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 12px;"><i class="fas fa-chart-doughnut" style="color:var(--accent-cyan);"></i> التحليل الحي لحضور الفريق</h3>
+                        <div style="height: 210px; display: flex; justify-content: center; align-items: center;">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 12px;"><i class="fas fa-radar" style="color:var(--accent-cyan);"></i> رادار دوام الفريق المباشر اليوم</h3>
+                    <div style="overflow-x: auto;">
                         <table class="table-custom">
-                            <thead><tr><th>الموظف</th><th>المكان</th><th>الدخول</th><th>الحالة</th></tr></thead>
+                            <thead><tr><th>الموظف</th><th>القسم</th><th>المكان</th><th>وقت الدخول</th><th>الحالة</th></tr></thead>
                             <tbody id="liveTeamTable"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- 2️⃣ الإجازات -->
+            <!-- 2️⃣ الإجازات الذكية -->
             <div id="leaveSec" class="section-panel">
-                <div class="card"><h3>رصيد الإجازات</h3><br><div class="balance-grid" id="balanceGrid"></div></div>
-                <div class="card">
-                    <h3>تقديم طلب إجازة</h3><br>
-                    <form onsubmit="submitLeave(event)">
-                        <div class="grid-2">
-                            <div class="form-group"><label>نوع الإجازة</label><select id="leaveType" required onchange="document.getElementById('hoursBox').style.display = this.value === 'hourly' ? 'block' : 'none'"><option value="annual">🏖️ سنوية</option><option value="sick">🤒 مرضية</option><option value="hourly">⏱️ ساعية</option><option value="bereavement">🖤 وفاة</option><option value="maternity">🍼 أمومة</option><option value="paternity">👶 أبوة</option><option value="unpaid">💸 بلا راتب</option><option value="hajj">🕋 حج</option><option value="marriage">💍 زواج</option></select></div>
-                            <div class="form-group" id="hoursBox" style="display:none;"><label>عدد الساعات</label><input type="number" id="leaveHours" min="1" max="8"></div>
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 15px;"><i class="fas fa-wallet" style="color:var(--accent-cyan);"></i> رصيد الإجازات المتوفر</h3>
+                    <div class="balance-grid" id="balanceGrid"></div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 15px;"><i class="fas fa-paper-plane" style="color:var(--accent-cyan);"></i> تقديم طلب إجازة</h3>
+                        <form onsubmit="submitLeave(event)">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>نوع الإجازة</label>
+                                    <select id="leaveType" required onchange="document.getElementById('hoursBox').style.display = this.value === 'hourly' ? 'block' : 'none'">
+                                        <option value="annual">🏖️ سنوية</option><option value="sick">🤒 مرضية</option>
+                                        <option value="hourly">⏱️ ساعية</option><option value="bereavement">🖤 وفاة</option>
+                                        <option value="maternity">🍼 أمومة</option><option value="paternity">👶 أبوة</option>
+                                        <option value="unpaid">💸 بلا راتب</option><option value="hajj">🕋 حج</option><option value="marriage">💍 زواج</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="hoursBox" style="display:none;"><label>عدد الساعات</label><input type="number" id="leaveHours" min="1" max="8"></div>
+                            </div>
+                            <div class="grid-3">
+                                <div class="form-group"><label>تاريخ البدء</label><input type="date" id="startDate" required></div>
+                                <div class="form-group"><label>تاريخ الانتهاء</label><input type="date" id="endDate" required></div>
+                                <div class="form-group"><label>تاريخ الالتحاق</label><input type="date" id="returnDate" required></div>
+                            </div>
+                            <div class="form-group"><label>سبب الإجازة</label><textarea id="leaveReason" rows="2" required></textarea></div>
+                            <button type="submit" class="btn-action">إرسال الطلب للمدير المباشر 🚀</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 15px;"><i class="fas fa-tasks" style="color:var(--accent-cyan);"></i> حالة طلبات إجازاتي السابقة</h3>
+                        <div style="overflow-x: auto;">
+                            <table class="table-custom">
+                                <thead><tr><th>النوع</th><th>الفترة</th><th>المدة</th><th>حالة القرار</th></tr></thead>
+                                <tbody id="myLeavesTable"></tbody>
+                            </table>
                         </div>
-                        <div class="grid-3">
-                            <div class="form-group"><label>تاريخ البدء</label><input type="date" id="startDate" required></div>
-                            <div class="form-group"><label>تاريخ الانتهاء</label><input type="date" id="endDate" required></div>
-                            <div class="form-group"><label>تاريخ الالتحاق</label><input type="date" id="returnDate" required></div>
-                        </div>
-                        <div class="form-group"><label>السبب</label><textarea id="leaveReason" required></textarea></div>
-                        <button type="submit" class="btn-action">إرسال الطلب</button>
-                    </form>
+                    </div>
                 </div>
             </div>
 
             <!-- 3️⃣ الاجتماعات -->
             <div id="meetingsSec" class="section-panel">
                 <div class="grid-2">
-                    <div class="card">
-                        <h3>حجز اجتماع</h3><br>
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 15px;"><i class="fas fa-calendar-plus" style="color:var(--accent-cyan);"></i> حجز اجتماع ذكي (Google Meet فريد)</h3>
                         <form onsubmit="submitMeeting(event)">
-                            <div class="form-group"><label>العنوان</label><input type="text" id="mTitle" required></div>
-                            <div class="form-group"><label>تفاصيل / أجندة الاجتماع</label><textarea id="mNotes" rows="2" placeholder="اكتب محاور الاجتماع..."></textarea></div>
-                            <div class="form-group"><label>المدعوون</label><div id="attendeesSelectList" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 8px;"></div></div>
+                            <div class="form-group"><label>عنوان الاجتماع</label><input type="text" id="mTitle" required placeholder="مثال: مراجعة خطة الربع الثالث"></div>
+                            <div class="form-group"><label>تفاصيل / أجندة الاجتماع</label><textarea id="mNotes" rows="2" placeholder="محاور النقاش..."></textarea></div>
+                            <div class="form-group"><label>اختر المدعوين (سيتم فحص تعارض مواعيدهم تلقائياً)</label><div id="attendeesSelectList" style="max-height: 130px; overflow-y: auto; border: 1px solid var(--glass-border); padding: 10px; border-radius: 12px; background: var(--input-bg);"></div></div>
                             <div class="grid-2"><div class="form-group"><label>التاريخ</label><input type="date" id="mDate" required></div><div class="form-group"><label>الوقت</label><input type="time" id="mTime" required></div></div>
-                            <div class="form-group"><label>المدة</label><select id="mDuration"><option value="30">30 دقيقة</option><option value="60">ساعة</option></select></div>
-                            <button type="submit" class="btn-action">إنشاء الاجتماع</button>
+                            <div class="form-group"><label>المدة</label><select id="mDuration"><option value="30">30 دقيقة</option><option value="60">ساعة واحدة</option><option value="90">ساعة ونصف</option></select></div>
+                            <button type="submit" class="btn-action">فحص المواعيد وإنشاء الاجتماع 🚀</button>
                         </form>
                     </div>
-                    <div class="card"><h3>الاجتماعات المجدولة</h3><br><div id="meetingsList"></div></div>
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 15px;"><i class="fas fa-video" style="color:var(--accent-cyan);"></i> الاجتماعات المجدولة</h3>
+                        <div id="meetingsList"></div>
+                    </div>
                 </div>
             </div>
 
             <!-- 4️⃣ السجلات -->
             <div id="recordsSec" class="section-panel">
-                <div class="card"><h3>سجل دوامي</h3><table class="table-custom"><thead><tr><th>التاريخ</th><th>المكان</th><th>دخول</th><th>انصراف</th><th>ملاحظات</th></tr></thead><tbody id="attendanceRecordsTable"></tbody></table></div>
-            </div>
-
-            <!-- 5️⃣ الأمان وتغيير كلمة المرور والبصمة -->
-            <div id="securitySec" class="section-panel">
-                <div class="grid-2">
-                    <div class="card">
-                        <h3><i class="fas fa-fingerprint" style="color:#10b981;"></i> بصمة الجوال (WebAuthn)</h3>
-                        <p style="font-size: 13px; color: #666; margin: 10px 0;">اربط مستشعر البصمة أو بصمة الوجه في هاتفك لتسجيل الدخول بنقرة واحدة دون كتابة كلمة المرور.</p>
-                        <button class="biometric-btn" onclick="registerBiometric()"><i class="fas fa-fingerprint"></i> تفعيل / تحديث بصمة هذا الجهاز</button>
-                    </div>
-                    <div class="card">
-                        <h3><i class="fas fa-lock" style="color:var(--mars-primary);"></i> تغيير كلمة المرور</h3>
-                        <p style="font-size: 13px; color: #666; margin: 10px 0;">كلمة المرور الافتراضية هي 123456. يُنصح بتغييرها فوراً.</p>
-                        <div class="form-group"><label>كلمة المرور الجديدة</label><input type="password" id="newPassInput" placeholder="أدخل كلمة مرور قوية"></div>
-                        <button class="btn-action" onclick="changePassword()">حفظ كلمة المرور الجديدة</button>
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 15px;"><i class="fas fa-history" style="color:var(--accent-cyan);"></i> سجل دوامي الشخصي</h3>
+                    <div style="overflow-x: auto;">
+                        <table class="table-custom">
+                            <thead><tr><th>التاريخ</th><th>المكان</th><th>وقت الدخول</th><th>وقت الانصراف</th><th>ملاحظات</th></tr></thead>
+                            <tbody id="attendanceRecordsTable"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- 6️⃣ إدارة الموظفين (حصري للـ HR والأدمن) -->
+            <!-- 5️⃣ الأمان والبصمة -->
+            <div id="securitySec" class="section-panel">
+                <div class="grid-2">
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 10px;"><i class="fas fa-fingerprint" style="color:#10b981;"></i> بصمة الجوال (WebAuthn)</h3>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">اربط مستشعر البصمة أو FaceID في هاتفك لتسجيل الدخول بلمسة واحدة دون الحاجة لكلمة المرور.</p>
+                        <button class="biometric-btn" onclick="registerBiometric()"><i class="fas fa-fingerprint"></i> تفعيل / تحديث بصمة هذا الجهاز</button>
+                    </div>
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 10px;"><i class="fas fa-key" style="color:var(--accent-cyan);"></i> تغيير كلمة المرور</h3>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">يتم تشفير كلمة المرور بتقنية SHA-256 قبل حفظها.</p>
+                        <div class="form-group"><label>كلمة المرور الجديدة</label><input type="password" id="newPassInput" placeholder="6 خانات على الأقل"></div>
+                        <button class="btn-action" onclick="changePassword()">حفظ كلمة المرور الجديدة 🔒</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6️⃣ إدارة الموظفين (HR Admin) -->
             <div id="hrAdminSec" class="section-panel">
                 <div class="grid-2">
-                    <div class="card">
-                        <h3><i class="fas fa-user-plus" style="color:var(--mars-primary);"></i> إضافة / تعديل موظف</h3>
-                        <br>
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 15px;"><i class="fas fa-user-plus" style="color:var(--accent-cyan);"></i> إضافة / تعديل موظف</h3>
                         <form onsubmit="saveEmployeeByHR(event)">
                             <div class="grid-2">
                                 <div class="form-group"><label>كود الموظف (فريد)</label><input type="text" id="hrCode" required placeholder="مثال: ME_105"></div>
@@ -246,20 +438,30 @@
                             </div>
                             <div class="grid-2">
                                 <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="hrEmail" required placeholder="name@mars-ngo.org"></div>
-                                <div class="form-group"><label>المدير المباشر</label><input type="text" id="hrManager" required placeholder="اسم المدير"></div>
+                                <div class="form-group">
+                                    <label>المدير المباشر (اختر من القائمة)</label>
+                                    <select id="hrManagerSelect" required></select>
+                                </div>
                             </div>
                             <div class="form-group"><label>كلمة المرور (تُترك فارغة للإبقاء على القديمة عند التعديل)</label><input type="text" id="hrPass" placeholder="الافتراضية: 123456"></div>
                             <div class="form-group">
-                                <label style="font-weight:normal; cursor:pointer;"><input type="checkbox" id="hrResetBio"> مسح بصمة الجوال المسجلة</label>
+                                <label style="font-weight:normal; cursor:pointer; color:var(--text-main);"><input type="checkbox" id="hrResetBio"> مسح بصمة الجوال المسجلة</label>
                             </div>
                             <button type="submit" class="btn-action">حفظ بيانات الموظف 💾</button>
                         </form>
                     </div>
-                    <div class="card">
-                        <h3><i class="fas fa-id-badge" style="color:var(--mars-primary);"></i> دليل الموظفين</h3>
-                        <div style="max-height: 400px; overflow-y: auto; margin-top: 10px;">
+
+                    <div class="glass-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                            <h3><i class="fas fa-id-badge" style="color:var(--accent-cyan);"></i> دليل الموظفين</h3>
+                            <div style="display:flex; gap:6px;">
+                                <button class="pill-btn" onclick="exportCSV('attendance')"><i class="fas fa-file-excel"></i> تصدير الدوام</button>
+                                <button class="pill-btn" onclick="exportCSV('leaves')"><i class="fas fa-file-csv"></i> تصدير الإجازات</button>
+                            </div>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
                             <table class="table-custom">
-                                <thead><tr><th>الكود</th><th>الاسم</th><th>القسم</th><th>البصمة</th><th>إجراء</th></tr></thead>
+                                <thead><tr><th>الكود</th><th>الاسم</th><th>المدير</th><th>البصمة</th><th>إجراء</th></tr></thead>
                                 <tbody id="hrEmployeesTable"></tbody>
                             </table>
                         </div>
@@ -267,15 +469,56 @@
                 </div>
             </div>
 
+            <!-- 7️⃣ إعدادات الإيميلات والتفاصيل (Admin Settings) -->
+            <div id="settingsSec" class="section-panel">
+                <div class="glass-card" style="max-width: 700px; margin: auto;">
+                    <h3 style="margin-bottom: 15px;"><i class="fas fa-sliders-h" style="color:var(--accent-cyan);"></i> إعدادات النظام ونصوص الإيميلات الرسمية</h3>
+                    <form onsubmit="saveSystemSettings(event)">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>إيميل الموارد البشرية (يستلم نسخة CC من كل إجازة)</label>
+                                <input type="email" id="setHrEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label>اسم المنظمة الرسمي (يظهر كاسم المُرسل)</label>
+                                <input type="text" id="setOrgName" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>النص التمهيدي لإيميل طلب الإجازة (المُرسل للمدير المباشر)</label>
+                            <textarea id="setLeaveIntro" rows="2" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>النص التمهيدي لإيميل حجز الاجتماعات</label>
+                            <textarea id="setMeetingIntro" rows="2" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-action">حفظ وتطبيق الإعدادات فوراً ⚡</button>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
+        // ⚠️ تأكد من وجود رابط الـ Web App URL الصحيح هنا:
         const API_URL = "https://script.google.com/macros/s/AKfycbwaHigI0tQgBsjN-Hn3CVecphmb7GmW9buD-AK1kfuyEb5wV4koSy1hUX_CqGMvAaa9vg/exec";
 
         let currentUser = null;
         let sessionToken = null;
         let teamList = [];
+        let attChartInstance = null;
+
+        // تحديث الساعة الحية
+        setInterval(() => {
+            const el = document.getElementById('liveClock');
+            if (el) el.textContent = new Date().toLocaleTimeString('en-GB');
+        }, 1000);
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        }
 
         async function callApi(payload) {
             const response = await fetch(API_URL, {
@@ -291,7 +534,7 @@
             const password = document.getElementById('passInput').value.trim();
             if (!code || !password) return Swal.fire('تنبيه', 'يرجى إدخال الكود وكلمة المرور', 'warning');
 
-            Swal.fire({ title: 'جاري التحقق المشفر...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'جاري المصادقة المشفرة...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const res = await callApi({ route: 'login', code, password });
             handleLoginResponse(res);
         }
@@ -305,7 +548,7 @@
                 window.crypto.getRandomValues(challenge);
                 await navigator.credentials.get({ publicKey: { challenge, timeout: 60000, userVerification: "required" } });
 
-                Swal.fire({ title: 'تم التحقق من البصمة! جاري الدخول...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                Swal.fire({ title: 'تم التعرف على البصمة! جاري الدخول...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 const res = await callApi({ route: 'login', credentialId: credId });
                 handleLoginResponse(res);
             } catch (err) {
@@ -320,7 +563,7 @@
                 const cred = await navigator.credentials.create({
                     publicKey: {
                         challenge,
-                        rp: { name: "MARS HR Platform" },
+                        rp: { name: "MARS 2050 HR" },
                         user: { id: new TextEncoder().encode(currentUser.code), name: currentUser.email, displayName: currentUser.name },
                         pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
                         authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
@@ -334,7 +577,7 @@
                     Swal.fire('تم بنجاح! 🎉', res.message, 'success');
                 }
             } catch (err) {
-                Swal.fire('تنبيه', 'تأكد من أن هاتفك يدعم البصمة أو رمز القفل (PIN) وأنك تفتح الرابط عبر متصفح Chrome أو Safari.', 'warning');
+                Swal.fire('تنبيه', 'تأكد من أن هاتفك يدعم البصمة أو رمز القفل (PIN) وأنك تفتح الرابط عبر Chrome أو Safari.', 'warning');
             }
         }
 
@@ -363,15 +606,48 @@
 
             if (currentUser.isAdmin) {
                 document.getElementById('m-hrAdmin').style.display = 'block';
+                document.getElementById('m-settings').style.display = 'block';
+                populateManagerDropdown();
                 loadHREmployees();
+                loadSystemSettings();
             }
 
             document.getElementById('attendeesSelectList').innerHTML = teamList
                 .filter(e => e.name !== currentUser.name)
-                .map(e => `<label style="display:block; margin-bottom:5px;"><input type="checkbox" value="${e.email}" data-name="${e.name}"> ${e.name}</label>`).join('');
+                .map(e => `<label style="display:block; margin-bottom:6px; cursor:pointer;"><input type="checkbox" value="${e.email}" data-name="${e.name}"> ${e.name} <small style="color:var(--text-muted);">(${e.role})</small></label>`).join('');
 
             Swal.close();
             refreshAllData();
+        }
+
+        function populateManagerDropdown() {
+            const select = document.getElementById('hrManagerSelect');
+            const options = ['<option value="مجلس الإدارة">🏛️ مجلس الإدارة (الإدارة العليا)</option>']
+                .concat(teamList.map(e => `<option value="${e.name}">👤 ${e.name} (${e.role})</option>`));
+            select.innerHTML = options.join('');
+        }
+
+        function renderAttendanceChart(officeCount, onlineCount, totalCount) {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            const absentCount = Math.max(0, totalCount - (officeCount + onlineCount));
+            if (attChartInstance) attChartInstance.destroy();
+
+            attChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['حضور مكتبي', 'عمل أونلاين', 'لم يسجل بعد / إجازة'],
+                    datasets: [{
+                        data: [officeCount, onlineCount, absentCount],
+                        backgroundColor: ['#0ea5e9', '#f59e0b', 'rgba(148, 163, 184, 0.25)'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Tajawal', size: 12 } } } }
+                }
+            });
         }
 
         async function refreshAllData() {
@@ -379,23 +655,43 @@
             if (dash.success) {
                 document.getElementById('statOffice').textContent = dash.stats.presentOffice;
                 document.getElementById('statOnline').textContent = dash.stats.presentOnline;
-                document.getElementById('liveTeamTable').innerHTML = dash.stats.activeTeam.map(t => `<tr><td><strong>${t.name}</strong></td><td>${t.office}</td><td>${t.checkIn}</td><td>${t.checkOut}</td></tr>`).join('') || '<tr><td colspan="4">لا يوجد حضور بعد</td></tr>';
+                renderAttendanceChart(dash.stats.presentOffice, dash.stats.presentOnline, teamList.length);
+
+                document.getElementById('liveTeamTable').innerHTML = dash.stats.activeTeam.map(t => `
+                    <tr>
+                        <td><strong>${t.name}</strong></td>
+                        <td>${t.dept}</td>
+                        <td>${t.office.includes('Online') ? '🌐 أونلاين' : '🏢 ' + t.office}</td>
+                        <td>${t.checkIn}</td>
+                        <td><span style="color:${t.checkOut.includes('🟢') ? '#10b981' : '#94a3b8'}; font-weight:bold;">${t.checkOut}</span></td>
+                    </tr>
+                `).join('') || '<tr><td colspan="5" style="color:var(--text-muted);">لا يوجد تسجيلات حضور اليوم بعد</td></tr>';
+
                 document.getElementById('attendanceRecordsTable').innerHTML = dash.myRecords.map(r => `<tr><td>${r.date}</td><td>${r.office}</td><td>${r.checkIn||'-'}</td><td>${r.checkOut||'-'}</td><td>${r.notes||'-'}</td></tr>`).join('');
                 
+                document.getElementById('myLeavesTable').innerHTML = (dash.myLeaves || []).map(l => `
+                    <tr>
+                        <td><strong>${l.type}</strong></td>
+                        <td>${l.start} ⬅️ ${l.end}</td>
+                        <td>${l.duration}</td>
+                        <td><span style="font-weight:bold; color:${l.status.includes('✅') ? '#10b981' : (l.status.includes('❌') ? '#ef4444' : '#f59e0b')};">${l.status}</span></td>
+                    </tr>
+                `).join('') || '<tr><td colspan="4" style="color:var(--text-muted);">لا توجد طلبات إجازة سابقة</td></tr>';
+
                 document.getElementById('meetingsList').innerHTML = dash.meetings.length ? dash.meetings.map(m => {
                     const canCancel = (m.organizerEmail === currentUser.email || currentUser.isAdmin);
                     return `
-                        <div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                        <div style="padding:14px; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center; gap:10px;">
                             <div>
-                                <strong>📌 ${m.title}</strong>
-                                <p style="font-size:12px; color:#666; margin:4px 0;">🗓️ ${m.date} | 🕒 ${m.time} (${m.duration})</p>
-                                <p style="font-size:11px; color:#888; margin-bottom:6px;">المنظّم: ${m.createdBy}</p>
-                                <a href="${m.location}" target="_blank" style="font-size:12px; font-weight:bold; color:#2596be; text-decoration:none;">دخول Google Meet 🔗</a>
+                                <strong style="font-size:15px;">📌 ${m.title}</strong>
+                                <p style="font-size:12px; color:var(--text-muted); margin:5px 0;">🗓️ ${m.date} | 🕒 ${m.time} (${m.duration})</p>
+                                <p style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">المنظّم: ${m.createdBy}</p>
+                                <a href="${m.location}" target="_blank" style="font-size:12px; font-weight:bold; color:var(--accent-cyan); text-decoration:none;">انضمام عبر Google Meet 🔗</a>
                             </div>
-                            ${canCancel ? `<button onclick="cancelMeeting('${m.id}', '${m.title}')" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;"><i class="fas fa-trash-alt"></i> إلغاء</button>` : ''}
+                            ${canCancel ? `<button onclick="cancelMeeting('${m.id}', '${m.title}')" style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:7px 12px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;"><i class="fas fa-trash-alt"></i> إلغاء</button>` : ''}
                         </div>
                     `;
-                }).join('') : '<p style="color:#888;">لا توجد اجتماعات مجدولة حالياً</p>';
+                }).join('') : '<p style="color:var(--text-muted);">لا توجد اجتماعات مجدولة حالياً</p>';
             }
 
             const bal = await callApi({ route: 'getBalance', code: currentUser.code, token: sessionToken });
@@ -408,7 +704,7 @@
         function sendAttendance(action) {
             const office = document.getElementById('officeSelect').value;
             const notes = document.getElementById('attNotes').value;
-            Swal.fire({ title: 'جاري التسجيل...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'جاري تسجيل البصمة...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             const send = async (coords) => {
                 const res = await callApi({
@@ -433,80 +729,58 @@
                 date: new Date().toISOString().split('T')[0],
                 time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
             });
-            Swal.fire('تم التوثيق', res.message, 'success');
+            Swal.fire('تم التوثيق ⚡', res.message, 'success');
             document.getElementById('pulseTaskInput').value = '';
         }
 
         async function submitLeave(e) {
             e.preventDefault();
-            Swal.fire({ title: 'جاري الإرسال...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'جاري إرسال الطلب للمدير...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const res = await callApi({
                 route: 'submitLeave', code: currentUser.code, token: sessionToken,
                 type: document.getElementById('leaveType').value, hours: document.getElementById('leaveHours').value,
                 startDate: document.getElementById('startDate').value, endDate: document.getElementById('endDate').value,
                 returnDate: document.getElementById('returnDate').value, reason: document.getElementById('leaveReason').value
             });
-            Swal.fire('تم التقديم', res.message, 'success');
-            refreshAllData();
+            Swal.fire(res.success ? 'تم الإرسال' : 'تنبيه', res.message, res.success ? 'success' : 'warning');
+            if (res.success) { e.target.reset(); refreshAllData(); }
         }
 
         async function submitMeeting(e) {
             e.preventDefault();
-            const attendees = Array.from(document.querySelectorAll('#attendeesSelectList input:checked'))
-                .map(cb => ({ name: cb.getAttribute('data-name'), email: cb.value }));
-            
-            if (!attendees.length) {
-                return Swal.fire('تنبيه', 'يرجى اختيار شخص واحد على الأقل للاجتماع معه', 'warning');
-            }
+            const attendees = Array.from(document.querySelectorAll('#attendeesSelectList input:checked')).map(cb => ({ name: cb.getAttribute('data-name'), email: cb.value }));
+            if (!attendees.length) return Swal.fire('تنبيه', 'يرجى اختيار شخص واحد على الأقل للاجتماع معه', 'warning');
 
-            Swal.fire({ title: 'جاري فحص المواعيد وإنشاء رابط Meet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
+            Swal.fire({ title: 'جاري فحص المواعيد وتوليد Meet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const res = await callApi({
-                route: 'createMeeting',
-                code: currentUser.code,
-                token: sessionToken,
+                route: 'createMeeting', code: currentUser.code, token: sessionToken,
                 meeting: {
-                    title: document.getElementById('mTitle').value,
-                    notes: document.getElementById('mNotes').value,
-                    date: document.getElementById('mDate').value,
-                    time: document.getElementById('mTime').value,
-                    duration: document.getElementById('mDuration').value,
-                    attendees: attendees
+                    title: document.getElementById('mTitle').value, notes: document.getElementById('mNotes').value,
+                    date: document.getElementById('mDate').value, time: document.getElementById('mTime').value,
+                    duration: document.getElementById('mDuration').value, attendees
                 }
             });
 
             if (res.success) {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'تم حجز الاجتماع بنجاح!',
-                    html: `<p>${res.message}</p><br><a href="${res.meetLink}" target="_blank" style="color:#2596be; font-weight:bold;">فتح رابط Google Meet الآن 🔗</a>`
+                    icon: 'success', title: 'تم حجز الاجتماع!',
+                    html: `<p>${res.message}</p><br><a href="${res.meetLink}" target="_blank" style="color:#0ea5e9; font-weight:bold;">فتح رابط Google Meet الآن 🔗</a>`
                 });
-                document.getElementById('mTitle').value = '';
-                document.getElementById('mNotes').value = '';
-                refreshAllData();
+                e.target.reset(); refreshAllData();
             } else {
-                Swal.fire({
-                    icon: res.conflict ? 'warning' : 'error',
-                    title: res.conflict ? 'الموعد محجوز مسبقاً!' : 'خطأ',
-                    text: res.message,
-                    confirmButtonText: 'تغيير الموعد'
-                });
+                Swal.fire({ icon: res.conflict ? 'warning' : 'error', title: res.conflict ? 'تعارض في الموعد!' : 'خطأ', text: res.message });
             }
         }
 
         async function cancelMeeting(meetingId, meetingTitle) {
             const confirm = await Swal.fire({
-                title: 'تأكيد إلغاء الاجتماع',
-                text: `هل أنت متأكد من إلغاء اجتماع "${meetingTitle}"؟`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                confirmButtonText: 'نعم، إلغاء الاجتماع',
-                cancelButtonText: 'تراجع'
+                title: 'تأكيد إلغاء الاجتماع', text: `هل أنت متأكد من إلغاء "${meetingTitle}"؟`,
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444',
+                confirmButtonText: 'نعم، إلغاء', cancelButtonText: 'تراجع'
             });
             if (!confirm.isConfirmed) return;
 
-            Swal.fire({ title: 'جاري إلغاء الاجتماع...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'جاري الإلغاء...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const res = await callApi({ route: 'cancelMeeting', code: currentUser.code, token: sessionToken, meetingId });
             Swal.fire(res.success ? 'تم الإلغاء' : 'خطأ', res.message, res.success ? 'success' : 'error');
             if (res.success) refreshAllData();
@@ -515,13 +789,15 @@
         async function loadHREmployees() {
             const res = await callApi({ route: 'adminGetEmployees', code: currentUser.code, token: sessionToken });
             if (res.success) {
+                teamList = res.employees;
+                populateManagerDropdown();
                 document.getElementById('hrEmployeesTable').innerHTML = res.employees.map(e => `
                     <tr>
                         <td><strong>${e.code}</strong></td>
-                        <td>${e.name}<br><small style="color:#777;">${e.email}</small></td>
-                        <td>${e.dept}</td>
-                        <td>${e.hasBio ? '✅ مفعّلة' : '❌ غير مربوطة'}</td>
-                        <td><button onclick='fillHRForm(${JSON.stringify(e)})' style="background:#e0f2fe; color:#0284c7; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px;">تعديل</button></td>
+                        <td>${e.name}<br><small style="color:var(--text-muted);">${e.dept}</small></td>
+                        <td>${e.manager}</td>
+                        <td>${e.hasBio ? '✅' : '❌'}</td>
+                        <td><button class="pill-btn" onclick='fillHRForm(${JSON.stringify(e)})'>تعديل</button></td>
                     </tr>
                 `).join('');
             }
@@ -533,7 +809,7 @@
             document.getElementById('hrDept').value = emp.dept;
             document.getElementById('hrRole').value = emp.role;
             document.getElementById('hrEmail').value = emp.email;
-            document.getElementById('hrManager').value = emp.manager;
+            document.getElementById('hrManagerSelect').value = emp.manager;
             document.getElementById('hrPass').value = '';
             document.getElementById('hrResetBio').checked = false;
         }
@@ -544,18 +820,51 @@
             const res = await callApi({
                 route: 'adminSaveEmployee', code: currentUser.code, token: sessionToken,
                 employee: {
-                    code: document.getElementById('hrCode').value,
-                    name: document.getElementById('hrName').value,
-                    dept: document.getElementById('hrDept').value,
-                    role: document.getElementById('hrRole').value,
-                    email: document.getElementById('hrEmail').value,
-                    manager: document.getElementById('hrManager').value,
-                    password: document.getElementById('hrPass').value,
-                    resetBio: document.getElementById('hrResetBio').checked
+                    code: document.getElementById('hrCode').value, name: document.getElementById('hrName').value,
+                    dept: document.getElementById('hrDept').value, role: document.getElementById('hrRole').value,
+                    email: document.getElementById('hrEmail').value, manager: document.getElementById('hrManagerSelect').value,
+                    password: document.getElementById('hrPass').value, resetBio: document.getElementById('hrResetBio').checked
                 }
             });
             Swal.fire(res.success ? 'تم بنجاح' : 'خطأ', res.message, res.success ? 'success' : 'error');
-            if (res.success) loadHREmployees();
+            if (res.success) { e.target.reset(); loadHREmployees(); }
+        }
+
+        async function loadSystemSettings() {
+            const res = await callApi({ route: 'adminGetSettings', code: currentUser.code, token: sessionToken });
+            if (res.success && res.settings) {
+                document.getElementById('setHrEmail').value = res.settings.hrEmail;
+                document.getElementById('setOrgName').value = res.settings.orgName;
+                document.getElementById('setLeaveIntro').value = res.settings.leaveEmailIntro;
+                document.getElementById('setMeetingIntro').value = res.settings.meetingEmailIntro;
+            }
+        }
+
+        async function saveSystemSettings(e) {
+            e.preventDefault();
+            Swal.fire({ title: 'جاري حفظ الإعدادات...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await callApi({
+                route: 'adminSaveSettings', code: currentUser.code, token: sessionToken,
+                settings: {
+                    hrEmail: document.getElementById('setHrEmail').value,
+                    orgName: document.getElementById('setOrgName').value,
+                    leaveEmailIntro: document.getElementById('setLeaveIntro').value,
+                    meetingEmailIntro: document.getElementById('setMeetingIntro').value
+                }
+            });
+            Swal.fire(res.success ? 'تم الحفظ' : 'خطأ', res.message, res.success ? 'success' : 'error');
+        }
+
+        async function exportCSV(target) {
+            Swal.fire({ title: 'جاري تجهيز ملف Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await callApi({ route: 'adminExportData', code: currentUser.code, token: sessionToken, target });
+            Swal.close();
+            if (!res.success) return Swal.fire('تنبيه', res.message, 'warning');
+            const blob = new Blob([res.csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = res.filename;
+            link.click();
         }
 
         function showSection(id) {
