@@ -310,7 +310,12 @@
                 </div>
 
                 <div class="glass-card">
-                    <h3 style="margin-bottom: 12px;"><i class="fas fa-radar" style="color:var(--accent-cyan);"></i> رادار دوام الفريق المباشر اليوم</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                        <h3><i class="fas fa-radar" style="color:var(--accent-cyan);"></i> رادار دوام الفريق المباشر اليوم</h3>
+                        <button id="shareWhatsAppBtn" onclick="shareLiveReportToWhatsApp()" style="display:none; background:#25D366; color:white; border:none; padding:8px 16px; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer; box-shadow:0 4px 12px rgba(37,211,102,0.3);">
+                            <i class="fab fa-whatsapp" style="font-size:16px;"></i> مشاركة التقرير على واتساب
+                        </button>
+                    </div>
                     <div style="overflow-x: auto;">
                         <table class="table-custom">
                             <thead><tr><th>الموظف</th><th>القسم</th><th>المكان</th><th>وقت الدخول</th><th>الحالة</th></tr></thead>
@@ -662,6 +667,7 @@
                 document.getElementById('m-hrAdmin').style.display = 'block';
                 document.getElementById('m-settings').style.display = 'block';
                 document.getElementById('m-aiAssistant').style.display = 'block';
+                document.getElementById('shareWhatsAppBtn').style.display = 'inline-block';
                 populateManagerDropdown();
                 loadHREmployees();
                 loadSystemSettings();
@@ -990,6 +996,35 @@
         }
 
         function logout() { location.reload(); }
+        function shareLiveReportToWhatsApp() {
+            if (!lastDashboardData) return;
+            const today = new Date().toISOString().split('T')[0];
+            const team = lastDashboardData.stats.activeTeam || [];
+        
+            const officeLines = team.filter(t => !t.office.includes('Online')).map(t => `• ${t.name} (${t.checkIn}) - ${t.office}`);
+            const onlineLines = team.filter(t => t.office.includes('Online')).map(t => `• ${t.name} (${t.checkIn})`);
+        
+            const msg = 
+                `📊 *ملخص دوام منظمة MARS*\n` +
+                `🗓️ التاريخ: ${today}\n` +
+                `━━━━━━━━━━━━━━━━━━\n` +
+                `👥 إجمالي الفريق: ${teamList.length}\n` +
+                `🏢 في المكاتب: ${officeLines.length}\n` +
+                `🌐 أونلاين: ${onlineLines.length}\n` +
+                `━━━━━━━━━━━━━━━━━━\n` +
+                (officeLines.length ? `*🏢 الحضور المكتبي:*\n${officeLines.join('\n')}\n\n` : '') +
+                (onlineLines.length ? `*🌐 العمل أونلاين:*\n${onlineLines.join('\n')}\n\n` : '') +
+                `⚡ _تقرير فوري من نظام MARS 2050_`;
+        
+            const phone = (document.getElementById('setWhatsappPhone')?.value || '').replace(/\D/g, '');
+            const url = phone 
+                ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+                : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+        
+            window.open(url, '_blank');
+        }
+
+        
     </script>
 </body>
 </html>
