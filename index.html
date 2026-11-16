@@ -256,10 +256,6 @@
 
             <!-- 1️⃣ القيادة والحضور -->
             <div id="attendanceSec" class="section-panel active">
-                <div style="display: flex; gap: 12px;">
-                <button id="btnCheckIn" class="btn-action" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="sendAttendance('checkIn')"><i class="fas fa-sign-in-alt"></i> بصمة الدخول</button>
-                <button id="btnCheckOut" class="btn-action" style="background: linear-gradient(135deg, #ef4444, #dc2626);" onclick="sendAttendance('checkOut')"><i class="fas fa-sign-out-alt"></i> بصمة الانصراف</button>
-            </div>
                 <div class="stats-row">
                     <div class="glass-card stat-card">
                         <div class="stat-icon" style="background: rgba(14,165,233,0.15); color: #0ea5e9;"><i class="fas fa-building"></i></div>
@@ -300,8 +296,8 @@
                         </div>
                         <div class="form-group"><label>ملاحظات / أهداف اليوم</label><textarea id="attNotes" rows="2" placeholder="اختياري..."></textarea></div>
                         <div style="display: flex; gap: 12px;">
-                            <button class="btn-action" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="sendAttendance('checkIn')"><i class="fas fa-sign-in-alt"></i> بصمة الدخول</button>
-                            <button class="btn-action" style="background: linear-gradient(135deg, #ef4444, #dc2626);" onclick="sendAttendance('checkOut')"><i class="fas fa-sign-out-alt"></i> بصمة الانصراف</button>
+                            <button id="btnCheckIn" class="btn-action" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="sendAttendance('checkIn')"><i class="fas fa-sign-in-alt"></i> بصمة الدخول</button>
+                            <button id="btnCheckOut" class="btn-action" style="background: linear-gradient(135deg, #ef4444, #dc2626);" onclick="sendAttendance('checkOut')"><i class="fas fa-sign-out-alt"></i> بصمة الانصراف</button>
                         </div>
                     </div>
 
@@ -1073,3 +1069,4 @@ function updateAttendanceButtons(status) {
     </script>
 </body>
 </html>
+Processed and analyzed in code
