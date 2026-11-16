@@ -568,6 +568,7 @@
         let sessionToken = null;
         let teamList = [];
         let attChartInstance = null;
+        let lastDashboardData = null;
 
         setInterval(() => {
             const el = document.getElementById('liveClock');
@@ -714,6 +715,7 @@
         async function refreshAllData() {
             const dash = await callApi({ route: 'getDashboard', code: currentUser.code, token: sessionToken });
             if (dash.success) {
+                lastDashboardData = dash;
                 document.getElementById('statOffice').textContent = dash.stats.presentOffice;
                 document.getElementById('statOnline').textContent = dash.stats.presentOnline;
                 renderAttendanceChart(dash.stats.presentOffice, dash.stats.presentOnline, teamList.length);
