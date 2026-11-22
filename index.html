@@ -853,6 +853,7 @@
                 const tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: GOOGLE_CLIENT_ID,
                     scope: 'https://www.googleapis.com/auth/calendar.events',
+                    hd: 'mars-ngo.org', // قصر الاختيار على حسابات منظمة MARS فقط
                     hint: currentUser.email,
                     callback: async (tokenResponse) => {
                         if (tokenResponse && tokenResponse.access_token) {
@@ -890,7 +891,8 @@
                         }
                     }
                 });
-                tokenClient.requestAccessToken({ prompt: '' });
+                // إظهار قائمة اختيار الحساب في حال كان المتصفح مسجلاً بحساب شخصي
+                tokenClient.requestAccessToken({ prompt: 'select_account' });
             });
         }
 
