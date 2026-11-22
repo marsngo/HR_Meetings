@@ -853,19 +853,36 @@
                 const tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: GOOGLE_CLIENT_ID,
                     scope: 'https://www.googleapis.com/auth/calendar.events',
-                    hd: 'mars-ngo.org', // قصر الاختيار على حسابات منظمة MARS فقط
+                    hd: 'mars-ngo.org',
                     hint: currentUser.email,
                     callback: async (tokenResponse) => {
                         if (tokenResponse && tokenResponse.access_token) {
                             try {
-                                const start = new Date(`${meetingData.date}T${meetingData.time}:00`);
-                                const end = new Date(start.getTime() + Number(meetingData.duration) * 60000);
+                                // تنسيق الوقت المحلي بدقة دون تحويله إلى UTC
+                                const pad = (n) => String(n).padStart(2, '0');
+                                const [year, month, day] = meetingData.date.split('-').map(Number);
+                                const [hour, minute] = meetingData.time.split(':').map(Number);
+
+                                const startLocalStr = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00`;
+
+                                // حساب وقت الانتهاء بإضافة مدة الاجتماع بالدقائق
+                                const endObj = new Date(year, month - 1, day, hour, minute + Number(meetingData.duration));
+                                const endLocalStr = `${endObj.getFullYear()}-${pad(endObj.getMonth() + 1)}-${pad(endObj.getDate())}T${pad(endObj.getHours())}:${pad(endObj.getMinutes())}:00`;
+
+                                // استخدام توقيت دمشق/حلب أو توقيت جهاز الموظف المحلي تلقائياً
+                                const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Damascus';
+
+                                const allAttendees = [
+                                    { email: currentUser.email },
+                                    ...meetingData.attendees.map(a => ({ email: a.email }))
+                                ];
+
                                 const eventPayload = {
                                     summary: meetingData.title,
                                     description: meetingData.notes || '',
-                                    start: { dateTime: start.toISOString() },
-                                    end: { dateTime: end.toISOString() },
-                                    attendees: meetingData.attendees.map(a => ({ email: a.email })),
+                                    start: { dateTime: startLocalStr, timeZone: userTimeZone },
+                                    end: { dateTime: endLocalStr, timeZone: userTimeZone },
+                                    attendees: allAttendees,
                                     conferenceData: {
                                         createRequest: {
                                             requestId: 'mars-' + Date.now(),
@@ -873,6 +890,7 @@
                                         }
                                     }
                                 };
+
                                 const calRes = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all', {
                                     method: 'POST',
                                     headers: {
@@ -891,7 +909,6 @@
                         }
                     }
                 });
-                // إظهار قائمة اختيار الحساب في حال كان المتصفح مسجلاً بحساب شخصي
                 tokenClient.requestAccessToken({ prompt: 'select_account' });
             });
         }
