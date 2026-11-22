@@ -4,8 +4,8 @@
   "description": "نظام الحضور والانصراف والإجازات والاجتماعات لمنظمة MARS",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#1e242b",
-  "theme_color": "#2596be",
+  "background_color": "#090d16",
+  "theme_color": "#0ea5e9",
   "orientation": "portrait",
   "icons": [
     {
